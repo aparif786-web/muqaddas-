@@ -104,7 +104,7 @@ class VIPLevel(BaseModel):
     name: str
     recharge_requirement: float
     monthly_fee: float
-    gaming_bonus: float = 0.0
+    charity_bonus: float = 0.0
     free_spins_daily: int = 0
     education_discount: float = 0.0
     priority_support: bool = False
