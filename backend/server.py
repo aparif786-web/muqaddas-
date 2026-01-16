@@ -1150,15 +1150,62 @@ async def get_daily_summary(current_user: User = Depends(get_current_user)):
 
 # ==================== AGENCY/COMMISSION SYSTEM ====================
 
-# Agency Level Configuration
+"""
+DETAILED AGENT COMMISSION STRUCTURE:
+
+1. Commission rates based on Last 30 Days Total Earnings:
+   - 0 - 2,000,000: 4% Commission
+   - 2,000,001 - 10,000,000: 8% Commission
+   - 10,000,001 - 50,000,000: 12% Commission
+   - 50,000,001 - 150,000,000: 16% Commission
+   - Over 150,000,000: 20% Commission
+
+2. Total Earnings Components:
+   - All host's total income (video calls, voice calls, text chats, gifts)
+   - Total income of all invite agents
+   - Excludes: Platform rewards, tasks, rankings
+
+3. Rules:
+   - If agent inactive for 7+ days: commission doesn't count
+   - If agent temporarily banned: commission doesn't count
+   - Commissions paid in Agent Coins
+"""
+
+# Commission Brackets based on 30-day earnings
+COMMISSION_BRACKETS = [
+    {"min": 0, "max": 2000000, "rate": 4},
+    {"min": 2000001, "max": 10000000, "rate": 8},
+    {"min": 10000001, "max": 50000000, "rate": 12},
+    {"min": 50000001, "max": 150000000, "rate": 16},
+    {"min": 150000001, "max": float('inf'), "rate": 20},
+]
+
+# Legacy Agency Levels (for backward compatibility)
 AGENCY_LEVELS = {
     0: {"name": "Member", "commission_rate": 0, "monthly_threshold": 0},
-    1: {"name": "Sub-Agent Level 1", "commission_rate": 12, "monthly_threshold": 500},
-    2: {"name": "Sub-Agent Level 2", "commission_rate": 16, "monthly_threshold": 1500},
-    3: {"name": "Agency Level 20", "commission_rate": 20, "monthly_threshold": 3000},
+    1: {"name": "Agent Level 1", "commission_rate": 4, "monthly_threshold": 0},
+    2: {"name": "Agent Level 2", "commission_rate": 8, "monthly_threshold": 2000000},
+    3: {"name": "Agent Level 3", "commission_rate": 12, "monthly_threshold": 10000000},
+    4: {"name": "Agent Level 4", "commission_rate": 16, "monthly_threshold": 50000000},
+    5: {"name": "Agent Level 5", "commission_rate": 20, "monthly_threshold": 150000000},
 }
 
 STARS_TO_COINS_FEE = 8  # 8% service fee
+AGENT_INACTIVE_DAYS = 7  # Days after which agent is considered inactive
+
+def get_commission_rate(total_earnings: float) -> dict:
+    """Get commission rate based on 30-day total earnings"""
+    for bracket in COMMISSION_BRACKETS:
+        if bracket["min"] <= total_earnings <= bracket["max"]:
+            return {"rate": bracket["rate"], "bracket": bracket}
+    return {"rate": 20, "bracket": COMMISSION_BRACKETS[-1]}
+
+def get_agent_level(total_earnings: float) -> int:
+    """Get agent level based on 30-day earnings"""
+    for level, info in sorted(AGENCY_LEVELS.items(), reverse=True):
+        if total_earnings >= info["monthly_threshold"]:
+            return level
+    return 0
 
 class AgencyStatus(BaseModel):
     user_id: str
@@ -1167,8 +1214,13 @@ class AgencyStatus(BaseModel):
     total_referrals: int = 0
     active_referrals: int = 0
     total_commission_earned: float = 0
+    agent_coins: float = 0  # Agent Coins balance
+    last_30_days_earnings: float = 0
     monthly_volume: float = 0
     monthly_volume_reset_date: str
+    last_active_date: str
+    is_active: bool = True
+    is_banned: bool = False
     created_at: datetime
     updated_at: datetime
 
@@ -1192,6 +1244,7 @@ async def get_agency_status(current_user: User = Depends(get_current_user)):
     if not agency:
         # Create agency status for user
         referral_code = f"MN{uuid.uuid4().hex[:8].upper()}"
+        today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
         agency = {
             "user_id": current_user.user_id,
             "agency_level": 0,
@@ -1199,25 +1252,115 @@ async def get_agency_status(current_user: User = Depends(get_current_user)):
             "total_referrals": 0,
             "active_referrals": 0,
             "total_commission_earned": 0,
+            "agent_coins": 0,
+            "last_30_days_earnings": 0,
             "monthly_volume": 0,
             "monthly_volume_reset_date": datetime.now(timezone.utc).strftime("%Y-%m-01"),
+            "last_active_date": today,
+            "is_active": True,
+            "is_banned": False,
             "created_at": datetime.now(timezone.utc),
             "updated_at": datetime.now(timezone.utc)
         }
         await db.agency_status.insert_one(agency)
     
-    # Get current level info
-    level_info = AGENCY_LEVELS.get(agency["agency_level"], AGENCY_LEVELS[0])
+    # Calculate 30-day earnings
+    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
     
-    # Calculate next level requirements
-    next_level = agency["agency_level"] + 1
-    next_level_info = AGENCY_LEVELS.get(next_level, None)
+    # Get host income (video, voice, text, gifts) - excludes platform rewards
+    host_income = await db.host_sessions.aggregate([
+        {"$match": {
+            "user_id": current_user.user_id,
+            "created_at": {"$gte": thirty_days_ago},
+            "status": "completed"
+        }},
+        {"$group": {"_id": None, "total": {"$sum": "$stars_earned"}}}
+    ]).to_list(1)
     
-    # Get referrals
+    gift_income = await db.gift_records.aggregate([
+        {"$match": {
+            "receiver_id": current_user.user_id,
+            "created_at": {"$gte": thirty_days_ago}
+        }},
+        {"$group": {"_id": None, "total": {"$sum": "$total_value"}}}
+    ]).to_list(1)
+    
+    # Get invite agent income
     referrals = await db.referrals.find(
         {"referrer_id": current_user.user_id},
         {"_id": 0}
     ).to_list(100)
+    
+    invite_agent_income = 0
+    for ref in referrals:
+        ref_income = await db.agent_commissions.aggregate([
+            {"$match": {
+                "from_user_id": ref["referred_id"],
+                "created_at": {"$gte": thirty_days_ago}
+            }},
+            {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+        ]).to_list(1)
+        if ref_income:
+            invite_agent_income += ref_income[0].get("total", 0)
+    
+    total_30_day_earnings = (
+        (host_income[0].get("total", 0) if host_income else 0) +
+        (gift_income[0].get("total", 0) if gift_income else 0) +
+        invite_agent_income
+    )
+    
+    # Get commission rate based on earnings
+    commission_info = get_commission_rate(total_30_day_earnings)
+    agent_level = get_agent_level(total_30_day_earnings)
+    
+    # Check if agent is active (last 7 days)
+    last_active = agency.get("last_active_date", "")
+    if last_active:
+        try:
+            last_active_date = datetime.strptime(last_active, "%Y-%m-%d").replace(tzinfo=timezone.utc)
+            days_inactive = (datetime.now(timezone.utc) - last_active_date).days
+            is_active = days_inactive < AGENT_INACTIVE_DAYS
+        except:
+            is_active = True
+    else:
+        is_active = True
+    
+    # Update agency status
+    await db.agency_status.update_one(
+        {"user_id": current_user.user_id},
+        {
+            "$set": {
+                "agency_level": agent_level,
+                "last_30_days_earnings": total_30_day_earnings,
+                "is_active": is_active,
+                "updated_at": datetime.now(timezone.utc)
+            }
+        }
+    )
+    
+    level_info = AGENCY_LEVELS.get(agent_level, AGENCY_LEVELS[0])
+    next_level = agent_level + 1
+    next_level_info = AGENCY_LEVELS.get(next_level, None)
+    
+    return {
+        **agency,
+        "agency_level": agent_level,
+        "last_30_days_earnings": total_30_day_earnings,
+        "current_commission_rate": commission_info["rate"],
+        "commission_bracket": commission_info["bracket"],
+        "level_info": level_info,
+        "next_level_info": next_level_info,
+        "referrals": referrals,
+        "is_active": is_active,
+        "inactive_warning": not is_active,
+        "all_levels": AGENCY_LEVELS,
+        "commission_brackets": COMMISSION_BRACKETS,
+        "earnings_breakdown": {
+            "host_income": host_income[0].get("total", 0) if host_income else 0,
+            "gift_income": gift_income[0].get("total", 0) if gift_income else 0,
+            "invite_agent_income": invite_agent_income
+        }
+    }
     
     return {
         **agency,
