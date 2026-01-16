@@ -1,0 +1,198 @@
+<analysis>
+<original_problem_statement>
+The user wants to build a comprehensive, multi-feature mobile application named Mugaddas Network. The application's vision is to improve people's lives through education and gaming, with a strong emphasis on charity.
+
+**Initial MVP (Completed):**
+-   **Wallet System:** Manage user transactions with virtual currency (coins & stars).
+-   **VIP System:** Subscription levels with tiered benefits.
+-   **Authentication:** Google Social Login.
+-   **UI:** A dark theme for a gaming/entertainment feel.
+
+**Subsequent Feature Requests (Prioritized & Implemented/In-Progress):**
+1.  **Reward System (Quick Win):** Reward users with 200 coins for 15 minutes of continuous activity. (Completed)
+2.  **Agency/Commission System:** A detailed, multi-level commission structure for agents based on performance and earnings. (Completed)
+3.  **Withdrawal System Enhancement:** Set a minimum of 100,000 stars for withdrawal and implement bank/UPI detail collection. (Completed)
+4.  **Charity System:** Automatically direct 2% of VIP gift income to a charity wallet. (Backend logic present)
+5.  **Payment Integration:** Integrate Razorpay/Stripe for real money transactions (INR). (Not Started)
+6.  **Gift System:** Allow users to send unique, signature gifts within the app and earn rewards for messaging. (Completed)
+7.  **Charity Lucky Wallet:** A game feature (renamed from Gaming) with a fixed 45% winning chance, where a portion of winnings and losses contributes to charity. (Completed)
+8.  **Vone Style Host Policy:** A complex reward system for live-streaming hosts, with different incentive structures for new hosts, regular hosts, and high-earners. (Completed)
+9.  **Education Platform:** An educational section with mind games, quizzes, and gamified learning modules to reward users for learning. (Backend Completed, Frontend Not Started)
+10. **Face Verification:** Enhance security by requiring face verification for withdrawals. (Not Started)
+</original_problem_statement>
+
+**User's preferred language**: The user communicates in a mix of Hindi and English (Hinglish). The next agent MUST respond in Hinglish to maintain rapport and ensure clear communication.
+
+**what currently exists?**
+A full-stack Expo (React Native) and FastAPI application. The core backend logic is in , and the frontend is structured using  under .
+
+The following features have been implemented:
+-   **Backend:** A robust  with FastAPI, using Pydantic models for data structures and Motor for asynchronous MongoDB access. It includes API endpoints for:
+    -   User Wallet (coins, stars, etc.)
+    -   VIP levels and subscriptions.
+    -   Activity Reward System (15 mins activity -> 200 coins).
+    -   A detailed, tiered Agency/Commission System.
+    -   Withdrawal System (with 100k star minimum).
+    -   Charity System (contribution logic).
+    -   In-app Gifting and Messaging Rewards.
+    -   Charity Lucky Wallet game with 45% win rate.
+    -   Vone Style Host Policy for live streamers.
+    -   Education Platform (courses, quizzes, progress).
+-   **Frontend:** An Expo app with a dark theme and tab-based navigation. It includes screens for:
+    -   Login (with Google OAuth logic).
+    -   Home/Dashboard.
+    -   Wallet, VIP, Rewards, Agency, and Withdrawal.
+    -   The tab navigator has been updated to include all these sections.
+
+**Last working item**:
+-   Last item agent was working: Implementation of the **Education Platform**. The agent successfully added all the necessary backend models (e.g., , , ) and API endpoints to .
+-   Status: **IN PROGRESS**
+-   Agent Testing Done: **Y** (Backend APIs were tested via curl).
+-   Which testing method agent to use? **Frontend testing agent** (After creating the UI).
+-   User Testing Done: **N**
+
+**All Pending/In progress Issue list**:
+-   **Issue 1:** The Education Platform is incomplete.
+    -   **Description (P0 - HIGHEST):** The backend for the Education Platform has been implemented and tested, but the frontend is completely missing. The user cannot see or interact with any courses, quizzes, or learning modules.
+    -   **Status:** IN PROGRESS
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** Frontend
+    -   **Blocked on other issue:** No
+
+**In progress Task List**:
+-   **Task 1: Complete the Education Platform Frontend**
+    -   **Where to resume:** Create new frontend screens for the Education platform. This will likely involve:
+        1.  Creating a new tab in  for Education.
+        2.  Creating a main screen  to list available courses.
+        3.  Creating a detail screen (e.g., ) to show course lessons and quizzes.
+        4.  Implementing the logic to fetch data from the new education APIs and display it.
+        5.  Adding UI for taking quizzes and tracking progress.
+    -   **What will be achieved with this?** A fully functional Education Platform, allowing users to learn and earn rewards, a core part of the Mugaddas Network vision.
+    -   **Status:** NOT STARTED
+    -   **Should Test frontend/backend/both after fix?** Frontend
+    -   **Blocked on something:** No
+
+**Upcoming and Future Tasks**
+-   **Upcoming Tasks:**
+    -   **(P0) Payment Integration:** Integrate a real payment gateway (Razorpay was mentioned) to handle deposits and withdrawals in INR. This is a critical revenue-enabling feature.
+    -   **(P1) Face Verification:** Implement a face verification system for withdrawals to enhance security, as requested by the user.
+    -   **(P1) Live Streaming Feature:** Build the UI and backend logic for users to host and watch video/audio live streams. The Host Policy backend is ready, but the streaming functionality itself is not.
+-   **Future Tasks:**
+    -   **(P2) 3D Interactive Smart Room:** Develop the advanced Smart Room concept for the Education Platform.
+    -   **(P2) Peer-to-Peer Learning:** Implement features for study groups and community forums.
+    -   **(P3) User-Generated Content:** Allow users to create and share their own educational content.
+    -   **(P3) Enhanced User Onboarding:** Create a more guided and simplified onboarding process for new users.
+
+**Completed work in this session**
+-   **MVP Foundation:** Built the initial Wallet and VIP systems with Google Auth and a dark theme.
+-   **Activity Reward System:** Implemented the backend logic and frontend screen for rewarding users for 15 minutes of activity. (, )
+-   **Agency/Commission System:** Developed a complex, tiered commission structure. (, )
+-   **Withdrawal System:** Implemented withdrawal logic with a minimum star requirement. (, )
+-   **Gift System:** Added functionality for in-app gifting and messaging rewards. ()
+-   **Charity Lucky Wallet Refactor & Implementation:** Renamed Gaming to Charity Lucky Wallet across the codebase and implemented the game logic with a 45% win rate. (, , etc.)
+-   **Vone Style Host Policy:** Implemented the complex host reward system in the backend. ()
+-   **Education Platform (Backend):** Created all backend models and APIs for courses, quizzes, and progress tracking. ()
+
+**Earlier issues found/mentioned but not fixed**
+-   None. The agent successfully debugged and fixed an issue where  in the Python backend caused a JSON parsing error during API calls.
+
+**Known issue recurrence from previous fork**
+-   None identified in the current session.
+
+**Code Architecture**
+
+
+**Key Technical Concepts**
+-   **Backend:** FastAPI, Motor (async MongoDB driver), Pydantic (data validation), JWT (for auth tokens).
+-   **Frontend:** React Native, Expo, Expo Router (file-based routing), TypeScript, Zustand (for state management in ), .
+-   **Database:** MongoDB.
+-   **Architecture:** Full-stack monorepo structure with a clear separation between the  Expo app and the  FastAPI service.
+
+**key DB schema**
+The application uses MongoDB, which is schema-less, but the Pydantic models in  enforce a schema at the application layer. Key models include:
+-   : {user_id, email, name, created_at}
+-   : {user_id, coins_balance, stars_balance, ...}
+-   : {level, name, monthly_fee, benefits, ...}
+-   : {user_id, type, amount, status, ...}
+-   : {user_id, level, commission_rate, referred_users, ...}
+-   : {user_id, registered_at, total_live_duration, ...}
+-   : {session_id, user_id, type, start_time, end_time, ...}
+-   : {name, price, emoji, ...}
+-   : {course_id, title, description, price, ...}
+-   : {quiz_id, course_id, questions, ...}
+-   : {user_id, course_id, completed_lessons, quiz_scores, ...}
+
+**changes in tech stack**
+-   None. The stack has remained consistent as FastAPI, Expo (React Native), and MongoDB.
+
+**All files of reference**
+-   **/app/backend/server.py**: The single most important file, containing all backend logic, API endpoints, and database models for every feature. It has been extensively modified throughout the session.
+-   **/app/frontend/app/(tabs)/_layout.tsx**: Defines the main tab navigation for the app. It was updated to add Rewards, Agency, and Withdrawal tabs.
+-   **/app/frontend/app/(tabs)/*.tsx**: Multiple new screens were created for each major feature (agency, rewards, vip, withdrawal, etc.).
+-   **/app/frontend/app/auth.tsx**: New file created to handle authentication state using Zustand.
+-   **/app/frontend/app/_layout.tsx**: New file to set up the root layout and auth provider.
+
+**Areas that need refactoring**:
+-   The  file is becoming very large (over 3000 lines). For future scalability, it should be broken down into multiple files, organized by feature (e.g., a router for , a router for , etc.). This will improve maintainability.
+
+**key api endpoints**
+-   : Handles Google social login.
+-   , : Manages VIP system.
+-   : Gets user wallet balance.
+-   , : Manages the activity reward system.
+-   , : Manages the agency system.
+-   , : Manages withdrawals.
+-   , : Manages the gifting system.
+-   , : The Charity Lucky Wallet game.
+-   , , : The Vone Style Host Policy.
+-   , : The new Education Platform APIs.
+
+**Critical Info for New Agent**
+-   **User Language:** Communicate in Hinglish.
+-   **Feature Naming:** Gaming is strictly forbidden. The feature is called **Charity Lucky Wallet**. This is a critical branding point for the user.
+-   **Business Logic:** The logic for commissions, host rewards, and the lucky wallet is very specific and has been iterated on with the user. Do not alter these calculations without explicit instruction.
+-   **Currency:** The app currently uses a mock/virtual currency system (Coins and Stars). Real payment integration (Razorpay) is a high-priority upcoming task.
+-   **Refactoring:** Be aware that  is monolithic. While you don't need to refactor it immediately, consider organizing new code into separate router files if adding significant new features.
+
+**documents created in this job**
+-   
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **User:** Requests implementation of Vone Style Host Policy with detailed logic for new hosts, normal hosts, and high-earners. (Completed)
+2.  **User:** Provides a detailed breakdown of the Agent Commission Structure with specific earning brackets and rules. (Completed)
+3.  **Agent:** Acknowledges the commission structure request. (Done)
+4.  **Agent:** Works on the commission structure, hits an error, fixes it, and confirms it's working. (Done)
+5.  **Agent:** Summarizes the Agent Commission Structure update. (Done)
+6.  **User:** Provides suggestions for enhancing the Education Platform, including gamified learning, quizzes, and workshops. (In Progress)
+7.  **Agent:** Acknowledges the Education Platform request. (Done)
+8.  **Agent:** Implements the backend for the Education Platform. (Done)
+9.  **Agent:** Tests the new Education APIs. (Done)
+10. **Agent:** Starts the final summary for the current session. (This is the current step).
+
+**Project Health Check:**
+-   **Working:** Backend APIs for all implemented features appear to be functional based on  tests. Frontend navigation and basic screens for most features are in place.
+-   **Broken:** The Education Platform is non-functional for the user as the frontend does not exist.
+-   **Mocked:** All financial transactions are currently mocked with virtual currency (Coins and Stars). Real payment integration is pending.
+
+**3rd Party Integrations**
+-   **Google OAuth:** Used for social login. The frontend implementation logic exists in .
+-   **expo-linear-gradient:** Used for UI styling.
+-   **expo-clipboard:** Used for copy-to-clipboard functionality, likely in the agency/referral section.
+
+**Testing status**
+-   Testing agent used after significant changes: **YES** (Backend and Frontend testing agents were used after the initial MVP build).
+-   Troubleshoot agent used after agent stuck in loop: **NO** (Agent resolved errors on its own).
+-   Test files created: None.
+-   Known regressions: None.
+
+**Credentials to test flow:**
+-   Google OAuth is used for login. The test flow would require signing in with a Google account via the web preview popup. No static credentials are provided.
+
+**What agent forgot to execute**
+-   The agent correctly prioritized tasks based on user feedback. The main forgotten item is not a mistake but the natural end of a work session: **The frontend for the Education Platform has not been created.**
+-   The user has also mentioned **Face Verification** for withdrawals in their documentation, but this has not been prioritized or implemented yet. It should be added to the upcoming tasks.
+</analysis>
+<SYS_PROMPT_SEPARATOR>
+<workspace_dir>
+/app
+</workspace_dir>
