@@ -1147,6 +1147,568 @@ async def get_daily_summary(current_user: User = Depends(get_current_user)):
         "config": ACTIVITY_REWARD_CONFIG
     }
 
+# ==================== AGENCY/COMMISSION SYSTEM ====================
+
+# Agency Level Configuration
+AGENCY_LEVELS = {
+    0: {"name": "Member", "commission_rate": 0, "monthly_threshold": 0},
+    1: {"name": "Sub-Agent Level 1", "commission_rate": 12, "monthly_threshold": 500},
+    2: {"name": "Sub-Agent Level 2", "commission_rate": 16, "monthly_threshold": 1500},
+    3: {"name": "Agency Level 20", "commission_rate": 20, "monthly_threshold": 3000},
+}
+
+STARS_TO_COINS_FEE = 8  # 8% service fee
+
+class AgencyStatus(BaseModel):
+    user_id: str
+    agency_level: int = 0
+    referral_code: str
+    total_referrals: int = 0
+    active_referrals: int = 0
+    total_commission_earned: float = 0
+    monthly_volume: float = 0
+    monthly_volume_reset_date: str
+    created_at: datetime
+    updated_at: datetime
+
+class Referral(BaseModel):
+    referral_id: str
+    referrer_id: str
+    referred_id: str
+    status: str = "pending"  # pending, active, inactive
+    total_transactions: float = 0
+    commission_earned: float = 0
+    created_at: datetime
+
+@api_router.get("/agency/status")
+async def get_agency_status(current_user: User = Depends(get_current_user)):
+    """Get user's agency status and commission info"""
+    agency = await db.agency_status.find_one(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    if not agency:
+        # Create agency status for user
+        referral_code = f"MN{uuid.uuid4().hex[:8].upper()}"
+        agency = {
+            "user_id": current_user.user_id,
+            "agency_level": 0,
+            "referral_code": referral_code,
+            "total_referrals": 0,
+            "active_referrals": 0,
+            "total_commission_earned": 0,
+            "monthly_volume": 0,
+            "monthly_volume_reset_date": datetime.now(timezone.utc).strftime("%Y-%m-01"),
+            "created_at": datetime.now(timezone.utc),
+            "updated_at": datetime.now(timezone.utc)
+        }
+        await db.agency_status.insert_one(agency)
+    
+    # Get current level info
+    level_info = AGENCY_LEVELS.get(agency["agency_level"], AGENCY_LEVELS[0])
+    
+    # Calculate next level requirements
+    next_level = agency["agency_level"] + 1
+    next_level_info = AGENCY_LEVELS.get(next_level, None)
+    
+    # Get referrals
+    referrals = await db.referrals.find(
+        {"referrer_id": current_user.user_id},
+        {"_id": 0}
+    ).to_list(100)
+    
+    return {
+        **agency,
+        "level_info": level_info,
+        "next_level_info": next_level_info,
+        "referrals": referrals,
+        "all_levels": AGENCY_LEVELS
+    }
+
+class ApplyReferralRequest(BaseModel):
+    referral_code: str
+
+@api_router.post("/agency/apply-referral")
+async def apply_referral_code(
+    request: ApplyReferralRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Apply a referral code during signup"""
+    # Check if user already has a referrer
+    existing_referral = await db.referrals.find_one(
+        {"referred_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    if existing_referral:
+        raise HTTPException(status_code=400, detail="You already have a referrer")
+    
+    # Find referrer by code
+    referrer_agency = await db.agency_status.find_one(
+        {"referral_code": request.referral_code.upper()},
+        {"_id": 0}
+    )
+    
+    if not referrer_agency:
+        raise HTTPException(status_code=404, detail="Invalid referral code")
+    
+    if referrer_agency["user_id"] == current_user.user_id:
+        raise HTTPException(status_code=400, detail="Cannot use your own referral code")
+    
+    # Create referral
+    referral = {
+        "referral_id": f"ref_{uuid.uuid4().hex[:12]}",
+        "referrer_id": referrer_agency["user_id"],
+        "referred_id": current_user.user_id,
+        "status": "active",
+        "total_transactions": 0,
+        "commission_earned": 0,
+        "created_at": datetime.now(timezone.utc)
+    }
+    await db.referrals.insert_one(referral)
+    
+    # Update referrer stats
+    await db.agency_status.update_one(
+        {"user_id": referrer_agency["user_id"]},
+        {
+            "$inc": {"total_referrals": 1, "active_referrals": 1},
+            "$set": {"updated_at": datetime.now(timezone.utc)}
+        }
+    )
+    
+    # Add notification to referrer
+    await db.notifications.insert_one({
+        "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+        "user_id": referrer_agency["user_id"],
+        "title": "New Referral! 🎉",
+        "message": f"A new user joined using your referral code!",
+        "notification_type": "agency",
+        "is_read": False,
+        "action_url": "/agency",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    return {"success": True, "message": "Referral code applied successfully"}
+
+class ConvertStarsRequest(BaseModel):
+    stars_amount: float
+
+@api_router.post("/agency/convert-stars")
+async def convert_stars_to_coins(
+    request: ConvertStarsRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Convert stars to coins (8% service fee)"""
+    if request.stars_amount <= 0:
+        raise HTTPException(status_code=400, detail="Amount must be positive")
+    
+    wallet = await db.wallets.find_one(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    if wallet["stars_balance"] < request.stars_amount:
+        raise HTTPException(status_code=400, detail="Insufficient stars balance")
+    
+    # Calculate conversion with 8% fee
+    fee_amount = request.stars_amount * (STARS_TO_COINS_FEE / 100)
+    coins_received = request.stars_amount - fee_amount
+    
+    # Update wallet
+    await db.wallets.update_one(
+        {"user_id": current_user.user_id},
+        {
+            "$inc": {
+                "stars_balance": -request.stars_amount,
+                "coins_balance": coins_received
+            },
+            "$set": {"updated_at": datetime.now(timezone.utc)}
+        }
+    )
+    
+    # Create transaction
+    transaction_id = f"txn_{uuid.uuid4().hex[:12]}"
+    await db.wallet_transactions.insert_one({
+        "transaction_id": transaction_id,
+        "user_id": current_user.user_id,
+        "transaction_type": "stars_conversion",
+        "amount": coins_received,
+        "currency_type": "coins",
+        "status": TransactionStatus.COMPLETED,
+        "description": f"Converted {request.stars_amount} stars to {coins_received} coins (8% fee: {fee_amount})",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    return {
+        "success": True,
+        "stars_converted": request.stars_amount,
+        "fee_amount": fee_amount,
+        "fee_percent": STARS_TO_COINS_FEE,
+        "coins_received": coins_received,
+        "transaction_id": transaction_id
+    }
+
+@api_router.get("/agency/commissions")
+async def get_commission_history(
+    limit: int = 20,
+    current_user: User = Depends(get_current_user)
+):
+    """Get commission history"""
+    commissions = await db.commissions.find(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    total = await db.commissions.count_documents({"user_id": current_user.user_id})
+    
+    return {
+        "commissions": commissions,
+        "total": total
+    }
+
+# ==================== WITHDRAWAL SYSTEM ====================
+
+WITHDRAWAL_CONFIG = {
+    "min_stars_required": 100000,
+    "processing_time_days": 3,
+    "vip_processing_time_days": 1,
+}
+
+class WithdrawalStatus(str, Enum):
+    PENDING = "pending"
+    PROCESSING = "processing"
+    COMPLETED = "completed"
+    REJECTED = "rejected"
+    CANCELLED = "cancelled"
+
+class BankDetails(BaseModel):
+    account_holder_name: str
+    account_number: str
+    ifsc_code: str
+    bank_name: str
+
+class UPIDetails(BaseModel):
+    upi_id: str
+
+class WithdrawalRequest(BaseModel):
+    amount: float
+    withdrawal_method: str  # "bank" or "upi"
+    bank_details: Optional[BankDetails] = None
+    upi_details: Optional[UPIDetails] = None
+
+@api_router.get("/withdrawal/config")
+async def get_withdrawal_config(current_user: User = Depends(get_current_user)):
+    """Get withdrawal configuration and user eligibility"""
+    wallet = await db.wallets.find_one(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    vip_status = await db.vip_status.find_one(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    is_vip = vip_status and vip_status.get("is_active", False)
+    is_eligible = wallet["stars_balance"] >= WITHDRAWAL_CONFIG["min_stars_required"]
+    
+    # Get saved payment methods
+    saved_methods = await db.payment_methods.find(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    ).to_list(10)
+    
+    return {
+        "config": WITHDRAWAL_CONFIG,
+        "current_stars": wallet["stars_balance"],
+        "is_eligible": is_eligible,
+        "is_vip": is_vip,
+        "processing_time_days": WITHDRAWAL_CONFIG["vip_processing_time_days"] if is_vip else WITHDRAWAL_CONFIG["processing_time_days"],
+        "saved_payment_methods": saved_methods,
+        "stars_needed": max(0, WITHDRAWAL_CONFIG["min_stars_required"] - wallet["stars_balance"])
+    }
+
+class SavePaymentMethodRequest(BaseModel):
+    method_type: str  # "bank" or "upi"
+    bank_details: Optional[BankDetails] = None
+    upi_details: Optional[UPIDetails] = None
+    is_default: bool = False
+
+@api_router.post("/withdrawal/save-payment-method")
+async def save_payment_method(
+    request: SavePaymentMethodRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Save a payment method for withdrawals"""
+    method_id = f"pm_{uuid.uuid4().hex[:12]}"
+    
+    method_data = {
+        "method_id": method_id,
+        "user_id": current_user.user_id,
+        "method_type": request.method_type,
+        "is_default": request.is_default,
+        "is_verified": False,
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    if request.method_type == "bank" and request.bank_details:
+        method_data["bank_details"] = request.bank_details.dict()
+    elif request.method_type == "upi" and request.upi_details:
+        method_data["upi_details"] = request.upi_details.dict()
+    else:
+        raise HTTPException(status_code=400, detail="Invalid payment method details")
+    
+    # If setting as default, unset other defaults
+    if request.is_default:
+        await db.payment_methods.update_many(
+            {"user_id": current_user.user_id},
+            {"$set": {"is_default": False}}
+        )
+    
+    await db.payment_methods.insert_one(method_data)
+    
+    return {"success": True, "method_id": method_id}
+
+class CreateWithdrawalRequest(BaseModel):
+    amount: float
+    payment_method_id: str
+
+@api_router.post("/withdrawal/request")
+async def create_withdrawal_request(
+    request: CreateWithdrawalRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Create a withdrawal request"""
+    wallet = await db.wallets.find_one(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    # Check minimum stars requirement
+    if wallet["stars_balance"] < WITHDRAWAL_CONFIG["min_stars_required"]:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Minimum {WITHDRAWAL_CONFIG['min_stars_required']} stars required for withdrawal"
+        )
+    
+    if request.amount <= 0:
+        raise HTTPException(status_code=400, detail="Amount must be positive")
+    
+    if request.amount > wallet["stars_balance"]:
+        raise HTTPException(status_code=400, detail="Insufficient stars balance")
+    
+    # Get payment method
+    payment_method = await db.payment_methods.find_one(
+        {"method_id": request.payment_method_id, "user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    if not payment_method:
+        raise HTTPException(status_code=404, detail="Payment method not found")
+    
+    # Check VIP status for priority
+    vip_status = await db.vip_status.find_one(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    is_vip = vip_status and vip_status.get("is_active", False)
+    
+    # Create withdrawal request
+    withdrawal_id = f"wd_{uuid.uuid4().hex[:12]}"
+    processing_days = WITHDRAWAL_CONFIG["vip_processing_time_days"] if is_vip else WITHDRAWAL_CONFIG["processing_time_days"]
+    
+    withdrawal = {
+        "withdrawal_id": withdrawal_id,
+        "user_id": current_user.user_id,
+        "amount": request.amount,
+        "status": WithdrawalStatus.PENDING,
+        "payment_method_id": request.payment_method_id,
+        "payment_method_type": payment_method["method_type"],
+        "payment_details": payment_method.get("bank_details") or payment_method.get("upi_details"),
+        "is_vip": is_vip,
+        "estimated_completion": datetime.now(timezone.utc) + timedelta(days=processing_days),
+        "face_verified": False,  # Will be updated after face verification
+        "created_at": datetime.now(timezone.utc),
+        "updated_at": datetime.now(timezone.utc)
+    }
+    
+    await db.withdrawals.insert_one(withdrawal)
+    
+    # Deduct stars from wallet
+    await db.wallets.update_one(
+        {"user_id": current_user.user_id},
+        {
+            "$inc": {"stars_balance": -request.amount},
+            "$set": {"updated_at": datetime.now(timezone.utc)}
+        }
+    )
+    
+    # Create transaction
+    await db.wallet_transactions.insert_one({
+        "transaction_id": f"txn_{uuid.uuid4().hex[:12]}",
+        "user_id": current_user.user_id,
+        "transaction_type": TransactionType.WITHDRAWAL,
+        "amount": -request.amount,
+        "currency_type": "stars",
+        "status": TransactionStatus.PENDING,
+        "reference_id": withdrawal_id,
+        "description": f"Withdrawal request of {request.amount} stars",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Add notification
+    await db.notifications.insert_one({
+        "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+        "user_id": current_user.user_id,
+        "title": "Withdrawal Request Submitted 📤",
+        "message": f"Your withdrawal of {request.amount} stars is being processed. Face verification required.",
+        "notification_type": "withdrawal",
+        "is_read": False,
+        "action_url": "/withdrawal",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    return {
+        "success": True,
+        "withdrawal_id": withdrawal_id,
+        "amount": request.amount,
+        "status": WithdrawalStatus.PENDING,
+        "estimated_completion": withdrawal["estimated_completion"].isoformat(),
+        "requires_face_verification": True
+    }
+
+@api_router.get("/withdrawal/history")
+async def get_withdrawal_history(
+    limit: int = 20,
+    current_user: User = Depends(get_current_user)
+):
+    """Get withdrawal history"""
+    withdrawals = await db.withdrawals.find(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    return {"withdrawals": withdrawals}
+
+@api_router.post("/withdrawal/{withdrawal_id}/verify-face")
+async def verify_face_for_withdrawal(
+    withdrawal_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Mark face verification as complete for withdrawal (mock)"""
+    withdrawal = await db.withdrawals.find_one(
+        {"withdrawal_id": withdrawal_id, "user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    if not withdrawal:
+        raise HTTPException(status_code=404, detail="Withdrawal not found")
+    
+    if withdrawal["status"] != WithdrawalStatus.PENDING:
+        raise HTTPException(status_code=400, detail="Withdrawal cannot be verified")
+    
+    # Update withdrawal status
+    await db.withdrawals.update_one(
+        {"withdrawal_id": withdrawal_id},
+        {
+            "$set": {
+                "face_verified": True,
+                "status": WithdrawalStatus.PROCESSING,
+                "updated_at": datetime.now(timezone.utc)
+            }
+        }
+    )
+    
+    # Add notification
+    await db.notifications.insert_one({
+        "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+        "user_id": current_user.user_id,
+        "title": "Face Verification Complete ✅",
+        "message": "Your withdrawal is now being processed.",
+        "notification_type": "withdrawal",
+        "is_read": False,
+        "action_url": "/withdrawal",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    return {"success": True, "message": "Face verification completed, withdrawal is now processing"}
+
+# ==================== CHARITY SYSTEM ====================
+
+CHARITY_CONFIG = {
+    "vip_gift_charity_percent": 2,  # 2% of VIP gift income goes to charity
+}
+
+@api_router.get("/charity/stats")
+async def get_charity_stats(current_user: User = Depends(get_current_user)):
+    """Get charity statistics"""
+    # Get global charity wallet
+    charity_wallet = await db.charity_wallet.find_one({}, {"_id": 0})
+    
+    if not charity_wallet:
+        charity_wallet = {
+            "total_balance": 0,
+            "total_received": 0,
+            "total_distributed": 0,
+            "lives_helped": 0,
+            "updated_at": datetime.now(timezone.utc)
+        }
+        await db.charity_wallet.insert_one(charity_wallet)
+    
+    # Get user's charity contributions
+    user_contributions = await db.charity_contributions.find(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(10).to_list(10)
+    
+    total_user_contribution = sum(c["amount"] for c in user_contributions)
+    
+    # Get recent distributions
+    distributions = await db.charity_distributions.find(
+        {},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(5).to_list(5)
+    
+    return {
+        "global_stats": charity_wallet,
+        "user_contributions": user_contributions,
+        "total_user_contribution": total_user_contribution,
+        "recent_distributions": distributions,
+        "config": CHARITY_CONFIG
+    }
+
+@api_router.get("/charity/leaderboard")
+async def get_charity_leaderboard():
+    """Get charity contribution leaderboard"""
+    # Aggregate top contributors
+    pipeline = [
+        {"$group": {
+            "_id": "$user_id",
+            "total_donated": {"$sum": "$amount"}
+        }},
+        {"$sort": {"total_donated": -1}},
+        {"$limit": 20}
+    ]
+    
+    top_contributors = await db.charity_contributions.aggregate(pipeline).to_list(20)
+    
+    # Get user details for each contributor
+    leaderboard = []
+    for i, contributor in enumerate(top_contributors):
+        user = await db.users.find_one(
+            {"user_id": contributor["_id"]},
+            {"_id": 0, "user_id": 1, "name": 1, "picture": 1}
+        )
+        if user:
+            leaderboard.append({
+                "rank": i + 1,
+                "user": user,
+                "total_donated": contributor["total_donated"]
+            })
+    
+    return {"leaderboard": leaderboard}
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/")
