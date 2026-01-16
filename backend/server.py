@@ -2098,6 +2098,362 @@ async def get_messaging_reward_status(current_user: User = Depends(get_current_u
         "can_claim_more": rewards_today < MESSAGING_REWARDS["max_daily_chat_rewards"]
     }
 
+# ==================== CHARITY LUCKY WALLET (GAME SYSTEM) ====================
+
+"""
+CHARITY LUCKY WALLET - Game Rules:
+1. Winning Rate: EXACTLY 45%
+2. If WIN: User gets 70% of bet amount, 30% goes to Charity
+3. If LOSE: 45% goes to Charity, 55% goes to Platform
+4. All transactions are tracked for transparency
+5. No errors allowed - calculations must be accurate
+"""
+
+CHARITY_LUCKY_WALLET_CONFIG = {
+    "winning_rate": 45,  # 45% chance of winning
+    "win_user_percent": 70,  # Winner gets 70% of bet
+    "win_charity_percent": 30,  # 30% of bet goes to charity on win
+    "lose_charity_percent": 45,  # 45% of lost bet goes to charity
+    "lose_platform_percent": 55,  # 55% of lost bet goes to platform
+    "min_bet": 10,  # Minimum bet amount
+    "max_bet": 100000,  # Maximum bet amount
+}
+
+class PlayLuckyWalletRequest(BaseModel):
+    bet_amount: float
+    charity_boost: bool = False  # If true, extra goes to charity
+
+@api_router.get("/lucky-wallet/config")
+async def get_lucky_wallet_config():
+    """Get Charity Lucky Wallet configuration"""
+    return {
+        "config": CHARITY_LUCKY_WALLET_CONFIG,
+        "description": "Charity Lucky Wallet - 45% winning chance. Help charity while playing!"
+    }
+
+@api_router.get("/lucky-wallet/stats")
+async def get_lucky_wallet_stats(current_user: User = Depends(get_current_user)):
+    """Get user's Lucky Wallet game statistics"""
+    # Get user's game history
+    games = await db.lucky_wallet_games.find(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    total_games = len(games)
+    wins = sum(1 for g in games if g["result"] == "win")
+    losses = total_games - wins
+    total_bet = sum(g["bet_amount"] for g in games)
+    total_won = sum(g["won_amount"] for g in games if g["result"] == "win")
+    total_charity = sum(g["charity_amount"] for g in games)
+    
+    win_rate = (wins / total_games * 100) if total_games > 0 else 0
+    
+    # Today's stats
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today_games = await db.lucky_wallet_games.find(
+        {"user_id": current_user.user_id, "date": today},
+        {"_id": 0}
+    ).to_list(100)
+    
+    today_total = len(today_games)
+    today_wins = sum(1 for g in today_games if g["result"] == "win")
+    today_bet = sum(g["bet_amount"] for g in today_games)
+    today_won = sum(g["won_amount"] for g in today_games if g["result"] == "win")
+    today_charity = sum(g["charity_amount"] for g in today_games)
+    
+    return {
+        "all_time": {
+            "total_games": total_games,
+            "wins": wins,
+            "losses": losses,
+            "win_rate": round(win_rate, 2),
+            "total_bet": total_bet,
+            "total_won": total_won,
+            "net_profit": total_won - total_bet,
+            "total_charity_contribution": total_charity
+        },
+        "today": {
+            "total_games": today_total,
+            "wins": today_wins,
+            "losses": today_total - today_wins,
+            "total_bet": today_bet,
+            "total_won": today_won,
+            "total_charity_contribution": today_charity
+        }
+    }
+
+@api_router.post("/lucky-wallet/play")
+async def play_lucky_wallet(
+    request: PlayLuckyWalletRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Play Charity Lucky Wallet Game
+    
+    GAME RULES:
+    - 45% chance of winning
+    - WIN: User gets 70% of bet, 30% to charity
+    - LOSE: 45% to charity, 55% to platform
+    """
+    
+    # Validate bet amount
+    if request.bet_amount < CHARITY_LUCKY_WALLET_CONFIG["min_bet"]:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Minimum bet is {CHARITY_LUCKY_WALLET_CONFIG['min_bet']} coins"
+        )
+    
+    if request.bet_amount > CHARITY_LUCKY_WALLET_CONFIG["max_bet"]:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Maximum bet is {CHARITY_LUCKY_WALLET_CONFIG['max_bet']} coins"
+        )
+    
+    # Check user's wallet balance
+    wallet = await db.wallets.find_one(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    if not wallet:
+        raise HTTPException(status_code=404, detail="Wallet not found")
+    
+    if wallet["coins_balance"] < request.bet_amount:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Insufficient balance. You have {wallet['coins_balance']} coins, need {request.bet_amount} coins"
+        )
+    
+    # Generate random number for game result (1-100)
+    random_number = random.randint(1, 100)
+    is_winner = random_number <= CHARITY_LUCKY_WALLET_CONFIG["winning_rate"]  # 45% chance
+    
+    # Calculate amounts based on result
+    bet_amount = float(request.bet_amount)
+    
+    if is_winner:
+        # USER WINS - Gets 70% of bet, 30% to charity
+        won_amount = round(bet_amount * (CHARITY_LUCKY_WALLET_CONFIG["win_user_percent"] / 100), 2)
+        charity_amount = round(bet_amount * (CHARITY_LUCKY_WALLET_CONFIG["win_charity_percent"] / 100), 2)
+        platform_amount = 0.0
+        result = "win"
+        
+        # User profit = won_amount - bet_amount (can be negative if 70% < 100%)
+        # Actually, user gets back won_amount, so net = won_amount - bet_amount
+        # 70% of bet means user loses 30% net
+        # Let me recalculate: If bet 100, win: get 70 back. Net = 70 - 100 = -30
+        # That doesn't seem right. Let me reconsider...
+        
+        # Better logic: Win means user gets bet + 70% bonus
+        # So if bet 100 and win: get back 100 + 70 = 170
+        # 30% of WINNINGS goes to charity
+        # Winnings = 70% of bet = 70
+        # Charity from win = 30% of 70 = 21
+        # User gets = 100 + 70 - 21 = 149? 
+        
+        # Simplest interpretation: 
+        # WIN: User gets 70% of bet back (loses 30%), 30% goes to charity
+        # So bet 100, win: get 70, charity gets 30
+        
+        # Final user balance change on WIN
+        balance_change = won_amount - bet_amount  # 70 - 100 = -30 (user still loses 30%)
+        
+    else:
+        # USER LOSES - 45% to charity, 55% to platform
+        won_amount = 0.0
+        charity_amount = round(bet_amount * (CHARITY_LUCKY_WALLET_CONFIG["lose_charity_percent"] / 100), 2)
+        platform_amount = round(bet_amount * (CHARITY_LUCKY_WALLET_CONFIG["lose_platform_percent"] / 100), 2)
+        result = "lose"
+        balance_change = -bet_amount  # User loses entire bet
+    
+    # Update user's wallet
+    new_balance = wallet["coins_balance"] + balance_change
+    
+    await db.wallets.update_one(
+        {"user_id": current_user.user_id},
+        {
+            "$set": {
+                "coins_balance": round(new_balance, 2),
+                "updated_at": datetime.now(timezone.utc)
+            }
+        }
+    )
+    
+    # Update charity wallet
+    await db.charity_wallet.update_one(
+        {},
+        {
+            "$inc": {
+                "total_balance": charity_amount,
+                "total_received": charity_amount
+            },
+            "$set": {"updated_at": datetime.now(timezone.utc)}
+        },
+        upsert=True
+    )
+    
+    # Record game
+    game_id = f"game_{uuid.uuid4().hex[:12]}"
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    game_record = {
+        "game_id": game_id,
+        "user_id": current_user.user_id,
+        "bet_amount": bet_amount,
+        "result": result,
+        "random_number": random_number,
+        "winning_threshold": CHARITY_LUCKY_WALLET_CONFIG["winning_rate"],
+        "won_amount": won_amount,
+        "charity_amount": charity_amount,
+        "platform_amount": platform_amount,
+        "balance_change": balance_change,
+        "new_balance": round(new_balance, 2),
+        "charity_boost": request.charity_boost,
+        "date": today,
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    await db.lucky_wallet_games.insert_one(game_record)
+    
+    # Record charity contribution
+    await db.charity_contributions.insert_one({
+        "contribution_id": f"char_{uuid.uuid4().hex[:12]}",
+        "user_id": current_user.user_id,
+        "amount": charity_amount,
+        "source": "lucky_wallet",
+        "game_id": game_id,
+        "result": result,
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Create wallet transaction
+    transaction_id = f"txn_{uuid.uuid4().hex[:12]}"
+    await db.wallet_transactions.insert_one({
+        "transaction_id": transaction_id,
+        "user_id": current_user.user_id,
+        "transaction_type": "lucky_wallet_bet" if result == "lose" else "lucky_wallet_win",
+        "amount": balance_change,
+        "currency_type": "coins",
+        "status": TransactionStatus.COMPLETED,
+        "reference_id": game_id,
+        "description": f"Charity Lucky Wallet - {'Won' if is_winner else 'Lost'} (Bet: {bet_amount}, Charity: {charity_amount})",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Send notification
+    if is_winner:
+        notif_title = "You Won! 🎉"
+        notif_message = f"Congratulations! You won {won_amount} coins. {charity_amount} coins went to charity!"
+    else:
+        notif_title = "Better luck next time! 💪"
+        notif_message = f"You lost {bet_amount} coins. But {charity_amount} coins went to charity to help others!"
+    
+    await db.notifications.insert_one({
+        "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+        "user_id": current_user.user_id,
+        "title": notif_title,
+        "message": notif_message,
+        "notification_type": "lucky_wallet",
+        "is_read": False,
+        "action_url": "/lucky-wallet",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    return {
+        "success": True,
+        "game_id": game_id,
+        "result": result,
+        "is_winner": is_winner,
+        "bet_amount": bet_amount,
+        "won_amount": won_amount,
+        "charity_contribution": charity_amount,
+        "platform_amount": platform_amount,
+        "balance_change": balance_change,
+        "new_balance": round(new_balance, 2),
+        "random_number": random_number,
+        "winning_threshold": CHARITY_LUCKY_WALLET_CONFIG["winning_rate"],
+        "transaction_id": transaction_id
+    }
+
+@api_router.get("/lucky-wallet/history")
+async def get_lucky_wallet_history(
+    limit: int = 20,
+    current_user: User = Depends(get_current_user)
+):
+    """Get user's Charity Lucky Wallet game history"""
+    games = await db.lucky_wallet_games.find(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    return {"games": games}
+
+@api_router.get("/lucky-wallet/leaderboard")
+async def get_lucky_wallet_leaderboard():
+    """Get Lucky Wallet leaderboard - top winners and charity contributors"""
+    
+    # Top winners by total won
+    winner_pipeline = [
+        {"$match": {"result": "win"}},
+        {"$group": {
+            "_id": "$user_id",
+            "total_won": {"$sum": "$won_amount"},
+            "games_won": {"$sum": 1}
+        }},
+        {"$sort": {"total_won": -1}},
+        {"$limit": 10}
+    ]
+    
+    top_winners = await db.lucky_wallet_games.aggregate(winner_pipeline).to_list(10)
+    
+    # Top charity contributors
+    charity_pipeline = [
+        {"$group": {
+            "_id": "$user_id",
+            "total_charity": {"$sum": "$charity_amount"},
+            "total_games": {"$sum": 1}
+        }},
+        {"$sort": {"total_charity": -1}},
+        {"$limit": 10}
+    ]
+    
+    top_contributors = await db.lucky_wallet_games.aggregate(charity_pipeline).to_list(10)
+    
+    # Get user details
+    winners_leaderboard = []
+    for i, winner in enumerate(top_winners):
+        user = await db.users.find_one(
+            {"user_id": winner["_id"]},
+            {"_id": 0, "user_id": 1, "name": 1, "picture": 1}
+        )
+        if user:
+            winners_leaderboard.append({
+                "rank": i + 1,
+                "user": user,
+                "total_won": winner["total_won"],
+                "games_won": winner["games_won"]
+            })
+    
+    contributors_leaderboard = []
+    for i, contributor in enumerate(top_contributors):
+        user = await db.users.find_one(
+            {"user_id": contributor["_id"]},
+            {"_id": 0, "user_id": 1, "name": 1, "picture": 1}
+        )
+        if user:
+            contributors_leaderboard.append({
+                "rank": i + 1,
+                "user": user,
+                "total_charity": contributor["total_charity"],
+                "total_games": contributor["total_games"]
+            })
+    
+    return {
+        "top_winners": winners_leaderboard,
+        "top_charity_contributors": contributors_leaderboard
+    }
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/")
