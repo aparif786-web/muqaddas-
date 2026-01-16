@@ -2454,6 +2454,511 @@ async def get_lucky_wallet_leaderboard():
         "top_charity_contributors": contributors_leaderboard
     }
 
+# ==================== HOST POLICY SYSTEM (VONE STYLE) ====================
+
+"""
+VONE STYLE HOST POLICY:
+
+1. WELCOME PERIOD (First 7 Days):
+   - Video Live: 1 hour = 2,000 Stars
+   - Audio Live: 2 hours = 3,000 Stars (1,500 x 2 sessions)
+
+2. NORMAL HOST POLICY (After 7 Days):
+   - Video Live: 1 hour = 1,000 Stars
+   - Daily Target: 3,000 Stars
+
+3. HIGH-EARNER BONUS (300K Gift Rule):
+   - If host receives 300K Stars in gifts = 3,000 Stars bonus
+   
+4. CHARITY: 2% of all high-earner gifts go to charity
+"""
+
+HOST_POLICY_CONFIG = {
+    # Welcome Period (First 7 Days)
+    "welcome_period_days": 7,
+    "welcome_video_reward_per_hour": 2000,  # Stars
+    "welcome_audio_reward_per_2hours": 3000,  # Stars (1500 x 2)
+    
+    # Normal Policy (After 7 Days)
+    "normal_video_reward_per_hour": 1000,  # Stars
+    "normal_audio_reward_per_hour": 500,  # Stars
+    "daily_target_stars": 3000,
+    
+    # High-Earner Bonus
+    "high_earner_threshold": 300000,  # 300K Stars
+    "high_earner_bonus": 3000,  # Stars (1500 x 2)
+    "high_earner_charity_percent": 2,  # 2% to charity
+    
+    # Minimum session requirements
+    "min_video_minutes": 60,  # 1 hour minimum for video
+    "min_audio_minutes": 120,  # 2 hours minimum for audio
+}
+
+class HostType(str, Enum):
+    VIDEO = "video"
+    AUDIO = "audio"
+
+class HostSession(BaseModel):
+    session_id: str
+    user_id: str
+    host_type: HostType
+    started_at: datetime
+    ended_at: Optional[datetime] = None
+    duration_minutes: int = 0
+    stars_earned: float = 0
+    is_welcome_period: bool = False
+    status: str = "active"  # active, completed, cancelled
+
+@api_router.get("/host/policy")
+async def get_host_policy():
+    """Get host policy configuration"""
+    return {
+        "config": HOST_POLICY_CONFIG,
+        "description": "Vone Style Host Policy - Earn stars by going live!"
+    }
+
+@api_router.get("/host/status")
+async def get_host_status(current_user: User = Depends(get_current_user)):
+    """Get user's host status and eligibility"""
+    
+    # Check if user is registered as host
+    host_profile = await db.host_profiles.find_one(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    if not host_profile:
+        # Create host profile
+        host_profile = {
+            "user_id": current_user.user_id,
+            "registered_at": datetime.now(timezone.utc),
+            "total_live_minutes": 0,
+            "total_stars_earned": 0,
+            "total_gifts_received": 0,
+            "is_verified": False,
+            "level": "new",
+            "created_at": datetime.now(timezone.utc)
+        }
+        await db.host_profiles.insert_one(host_profile)
+    
+    # Calculate days since registration
+    registered_at = host_profile.get("registered_at", host_profile.get("created_at"))
+    if registered_at.tzinfo is None:
+        registered_at = registered_at.replace(tzinfo=timezone.utc)
+    
+    days_since_registration = (datetime.now(timezone.utc) - registered_at).days
+    is_welcome_period = days_since_registration < HOST_POLICY_CONFIG["welcome_period_days"]
+    
+    # Get today's sessions
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today_sessions = await db.host_sessions.find(
+        {"user_id": current_user.user_id, "date": today, "status": "completed"},
+        {"_id": 0}
+    ).to_list(100)
+    
+    today_video_minutes = sum(s["duration_minutes"] for s in today_sessions if s["host_type"] == "video")
+    today_audio_minutes = sum(s["duration_minutes"] for s in today_sessions if s["host_type"] == "audio")
+    today_stars_earned = sum(s["stars_earned"] for s in today_sessions)
+    
+    # Check for active session
+    active_session = await db.host_sessions.find_one(
+        {"user_id": current_user.user_id, "status": "active"},
+        {"_id": 0}
+    )
+    
+    # Calculate current rewards based on policy
+    if is_welcome_period:
+        video_reward = HOST_POLICY_CONFIG["welcome_video_reward_per_hour"]
+        audio_reward = HOST_POLICY_CONFIG["welcome_audio_reward_per_2hours"]
+    else:
+        video_reward = HOST_POLICY_CONFIG["normal_video_reward_per_hour"]
+        audio_reward = HOST_POLICY_CONFIG["normal_audio_reward_per_hour"] * 2
+    
+    # Check high-earner status
+    is_high_earner = host_profile.get("total_gifts_received", 0) >= HOST_POLICY_CONFIG["high_earner_threshold"]
+    
+    return {
+        "user_id": current_user.user_id,
+        "host_profile": host_profile,
+        "days_since_registration": days_since_registration,
+        "is_welcome_period": is_welcome_period,
+        "welcome_days_remaining": max(0, HOST_POLICY_CONFIG["welcome_period_days"] - days_since_registration),
+        "is_high_earner": is_high_earner,
+        "current_rewards": {
+            "video_per_hour": video_reward,
+            "audio_per_2hours": audio_reward
+        },
+        "today_stats": {
+            "video_minutes": today_video_minutes,
+            "audio_minutes": today_audio_minutes,
+            "stars_earned": today_stars_earned,
+            "target_progress": (today_stars_earned / HOST_POLICY_CONFIG["daily_target_stars"]) * 100
+        },
+        "active_session": active_session
+    }
+
+class StartHostSessionRequest(BaseModel):
+    host_type: HostType
+
+@api_router.post("/host/start-session")
+async def start_host_session(
+    request: StartHostSessionRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Start a live hosting session"""
+    
+    # Check for existing active session
+    active_session = await db.host_sessions.find_one(
+        {"user_id": current_user.user_id, "status": "active"},
+        {"_id": 0}
+    )
+    
+    if active_session:
+        raise HTTPException(status_code=400, detail="You already have an active session")
+    
+    # Get host profile
+    host_profile = await db.host_profiles.find_one(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    if not host_profile:
+        # Create host profile
+        host_profile = {
+            "user_id": current_user.user_id,
+            "registered_at": datetime.now(timezone.utc),
+            "total_live_minutes": 0,
+            "total_stars_earned": 0,
+            "total_gifts_received": 0,
+            "is_verified": False,
+            "level": "new",
+            "created_at": datetime.now(timezone.utc)
+        }
+        await db.host_profiles.insert_one(host_profile)
+    
+    # Check if in welcome period
+    registered_at = host_profile.get("registered_at", host_profile.get("created_at"))
+    if registered_at.tzinfo is None:
+        registered_at = registered_at.replace(tzinfo=timezone.utc)
+    
+    days_since_registration = (datetime.now(timezone.utc) - registered_at).days
+    is_welcome_period = days_since_registration < HOST_POLICY_CONFIG["welcome_period_days"]
+    
+    # Create session
+    session_id = f"session_{uuid.uuid4().hex[:12]}"
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    session = {
+        "session_id": session_id,
+        "user_id": current_user.user_id,
+        "host_type": request.host_type,
+        "started_at": datetime.now(timezone.utc),
+        "ended_at": None,
+        "duration_minutes": 0,
+        "stars_earned": 0,
+        "is_welcome_period": is_welcome_period,
+        "status": "active",
+        "date": today,
+        "created_at": datetime.now(timezone.utc)
+    }
+    
+    await db.host_sessions.insert_one(session)
+    
+    return {
+        "success": True,
+        "session_id": session_id,
+        "host_type": request.host_type,
+        "is_welcome_period": is_welcome_period,
+        "started_at": session["started_at"].isoformat()
+    }
+
+@api_router.post("/host/end-session/{session_id}")
+async def end_host_session(
+    session_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """End a live hosting session and calculate rewards"""
+    
+    # Get session
+    session = await db.host_sessions.find_one(
+        {"session_id": session_id, "user_id": current_user.user_id, "status": "active"},
+        {"_id": 0}
+    )
+    
+    if not session:
+        raise HTTPException(status_code=404, detail="Active session not found")
+    
+    # Calculate duration
+    started_at = session["started_at"]
+    if started_at.tzinfo is None:
+        started_at = started_at.replace(tzinfo=timezone.utc)
+    
+    ended_at = datetime.now(timezone.utc)
+    duration_minutes = int((ended_at - started_at).total_seconds() / 60)
+    
+    # Calculate rewards based on policy
+    stars_earned = 0
+    host_type = session["host_type"]
+    is_welcome = session["is_welcome_period"]
+    
+    if host_type == "video":
+        if is_welcome:
+            # Welcome period: 2,000 Stars per hour
+            if duration_minutes >= HOST_POLICY_CONFIG["min_video_minutes"]:
+                hours = duration_minutes // 60
+                stars_earned = hours * HOST_POLICY_CONFIG["welcome_video_reward_per_hour"]
+        else:
+            # Normal: 1,000 Stars per hour
+            if duration_minutes >= HOST_POLICY_CONFIG["min_video_minutes"]:
+                hours = duration_minutes // 60
+                stars_earned = hours * HOST_POLICY_CONFIG["normal_video_reward_per_hour"]
+    
+    elif host_type == "audio":
+        if is_welcome:
+            # Welcome period: 3,000 Stars per 2 hours (1500 x 2)
+            if duration_minutes >= HOST_POLICY_CONFIG["min_audio_minutes"]:
+                two_hour_blocks = duration_minutes // 120
+                stars_earned = two_hour_blocks * HOST_POLICY_CONFIG["welcome_audio_reward_per_2hours"]
+        else:
+            # Normal: 500 Stars per hour
+            hours = duration_minutes // 60
+            stars_earned = hours * HOST_POLICY_CONFIG["normal_audio_reward_per_hour"]
+    
+    # Update session
+    await db.host_sessions.update_one(
+        {"session_id": session_id},
+        {
+            "$set": {
+                "ended_at": ended_at,
+                "duration_minutes": duration_minutes,
+                "stars_earned": stars_earned,
+                "status": "completed"
+            }
+        }
+    )
+    
+    # Credit stars to wallet if earned
+    if stars_earned > 0:
+        await db.wallets.update_one(
+            {"user_id": current_user.user_id},
+            {
+                "$inc": {"stars_balance": stars_earned},
+                "$set": {"updated_at": datetime.now(timezone.utc)}
+            }
+        )
+        
+        # Create transaction
+        await db.wallet_transactions.insert_one({
+            "transaction_id": f"txn_{uuid.uuid4().hex[:12]}",
+            "user_id": current_user.user_id,
+            "transaction_type": "host_reward",
+            "amount": stars_earned,
+            "currency_type": "stars",
+            "status": TransactionStatus.COMPLETED,
+            "reference_id": session_id,
+            "description": f"{'Video' if host_type == 'video' else 'Audio'} Live Reward ({duration_minutes} mins)" + (" [Welcome Bonus]" if is_welcome else ""),
+            "created_at": datetime.now(timezone.utc)
+        })
+        
+        # Update host profile
+        await db.host_profiles.update_one(
+            {"user_id": current_user.user_id},
+            {
+                "$inc": {
+                    "total_live_minutes": duration_minutes,
+                    "total_stars_earned": stars_earned
+                },
+                "$set": {"updated_at": datetime.now(timezone.utc)}
+            }
+        )
+        
+        # Send notification
+        await db.notifications.insert_one({
+            "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+            "user_id": current_user.user_id,
+            "title": "Live Session Completed! ⭐",
+            "message": f"You earned {stars_earned} stars for your {duration_minutes} minute {'video' if host_type == 'video' else 'audio'} session!",
+            "notification_type": "host_reward",
+            "is_read": False,
+            "action_url": "/host",
+            "created_at": datetime.now(timezone.utc)
+        })
+    
+    return {
+        "success": True,
+        "session_id": session_id,
+        "duration_minutes": duration_minutes,
+        "stars_earned": stars_earned,
+        "is_welcome_period": is_welcome,
+        "host_type": host_type,
+        "message": f"Session ended. You earned {stars_earned} stars!" if stars_earned > 0 else f"Session ended. Minimum {HOST_POLICY_CONFIG['min_video_minutes'] if host_type == 'video' else HOST_POLICY_CONFIG['min_audio_minutes']} minutes required for rewards."
+    }
+
+@api_router.post("/host/check-high-earner-bonus")
+async def check_high_earner_bonus(current_user: User = Depends(get_current_user)):
+    """Check and claim high-earner bonus if eligible (300K gift rule)"""
+    
+    host_profile = await db.host_profiles.find_one(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    if not host_profile:
+        raise HTTPException(status_code=404, detail="Host profile not found")
+    
+    total_gifts = host_profile.get("total_gifts_received", 0)
+    
+    if total_gifts < HOST_POLICY_CONFIG["high_earner_threshold"]:
+        remaining = HOST_POLICY_CONFIG["high_earner_threshold"] - total_gifts
+        return {
+            "eligible": False,
+            "total_gifts_received": total_gifts,
+            "threshold": HOST_POLICY_CONFIG["high_earner_threshold"],
+            "remaining": remaining,
+            "message": f"You need {remaining} more stars in gifts to qualify for high-earner bonus"
+        }
+    
+    # Check if already claimed this month
+    current_month = datetime.now(timezone.utc).strftime("%Y-%m")
+    existing_bonus = await db.high_earner_bonuses.find_one({
+        "user_id": current_user.user_id,
+        "month": current_month
+    })
+    
+    if existing_bonus:
+        return {
+            "eligible": True,
+            "already_claimed": True,
+            "total_gifts_received": total_gifts,
+            "message": "You have already claimed your high-earner bonus this month"
+        }
+    
+    # Credit bonus (3000 stars split into 2 instalments)
+    bonus_amount = HOST_POLICY_CONFIG["high_earner_bonus"]
+    instalment = bonus_amount / 2  # 1500 each
+    
+    # First instalment now
+    await db.wallets.update_one(
+        {"user_id": current_user.user_id},
+        {
+            "$inc": {"stars_balance": instalment},
+            "$set": {"updated_at": datetime.now(timezone.utc)}
+        }
+    )
+    
+    # Record bonus
+    await db.high_earner_bonuses.insert_one({
+        "bonus_id": f"bonus_{uuid.uuid4().hex[:12]}",
+        "user_id": current_user.user_id,
+        "month": current_month,
+        "total_bonus": bonus_amount,
+        "instalment_1": instalment,
+        "instalment_1_date": datetime.now(timezone.utc),
+        "instalment_2": instalment,
+        "instalment_2_date": datetime.now(timezone.utc) + timedelta(days=15),
+        "status": "partial",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Create transaction
+    await db.wallet_transactions.insert_one({
+        "transaction_id": f"txn_{uuid.uuid4().hex[:12]}",
+        "user_id": current_user.user_id,
+        "transaction_type": "high_earner_bonus",
+        "amount": instalment,
+        "currency_type": "stars",
+        "status": TransactionStatus.COMPLETED,
+        "description": f"High-Earner Bonus (Instalment 1/2) - 300K Gift Achievement",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Calculate charity from gifts (2%)
+    charity_amount = total_gifts * (HOST_POLICY_CONFIG["high_earner_charity_percent"] / 100)
+    
+    # Add to charity
+    await db.charity_wallet.update_one(
+        {},
+        {
+            "$inc": {
+                "total_balance": charity_amount,
+                "total_received": charity_amount
+            },
+            "$set": {"updated_at": datetime.now(timezone.utc)}
+        },
+        upsert=True
+    )
+    
+    # Send notification
+    await db.notifications.insert_one({
+        "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+        "user_id": current_user.user_id,
+        "title": "High-Earner Bonus Unlocked! 🏆",
+        "message": f"Congratulations! You received {instalment} stars bonus (1st instalment). 2nd instalment in 15 days!",
+        "notification_type": "high_earner",
+        "is_read": False,
+        "action_url": "/host",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    return {
+        "success": True,
+        "eligible": True,
+        "bonus_credited": instalment,
+        "next_instalment": instalment,
+        "next_instalment_date": (datetime.now(timezone.utc) + timedelta(days=15)).isoformat(),
+        "charity_contribution": charity_amount,
+        "message": f"High-Earner Bonus activated! {instalment} stars credited, {instalment} more in 15 days!"
+    }
+
+@api_router.get("/host/sessions")
+async def get_host_sessions(
+    limit: int = 20,
+    current_user: User = Depends(get_current_user)
+):
+    """Get host session history"""
+    sessions = await db.host_sessions.find(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    ).sort("created_at", -1).limit(limit).to_list(limit)
+    
+    return {"sessions": sessions}
+
+@api_router.get("/host/leaderboard")
+async def get_host_leaderboard():
+    """Get top hosts leaderboard"""
+    
+    # Top hosts by stars earned
+    pipeline = [
+        {"$group": {
+            "_id": "$user_id",
+            "total_stars": {"$sum": "$stars_earned"},
+            "total_minutes": {"$sum": "$duration_minutes"},
+            "session_count": {"$sum": 1}
+        }},
+        {"$sort": {"total_stars": -1}},
+        {"$limit": 20}
+    ]
+    
+    top_hosts = await db.host_sessions.aggregate(pipeline).to_list(20)
+    
+    # Get user details
+    leaderboard = []
+    for i, host in enumerate(top_hosts):
+        user = await db.users.find_one(
+            {"user_id": host["_id"]},
+            {"_id": 0, "user_id": 1, "name": 1, "picture": 1}
+        )
+        if user:
+            leaderboard.append({
+                "rank": i + 1,
+                "user": user,
+                "total_stars": host["total_stars"],
+                "total_minutes": host["total_minutes"],
+                "session_count": host["session_count"]
+            })
+    
+    return {"leaderboard": leaderboard}
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/")
