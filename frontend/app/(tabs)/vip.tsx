@@ -253,16 +253,16 @@ export default function VIPScreen() {
                   </View>
 
                   <View style={styles.levelBenefits}>
-                    {level.gaming_bonus > 0 && (
+                    {level.charity_bonus > 0 && (
                       <View style={styles.benefitItem}>
-                        <Ionicons name="game-controller" size={14} color="#4CAF50" />
-                        <Text style={styles.benefitText}>+{level.gaming_bonus}% Gaming Bonus</Text>
+                        <Ionicons name="heart" size={14} color="#4CAF50" />
+                        <Text style={styles.benefitText}>+{level.charity_bonus}% Charity Bonus</Text>
                       </View>
                     )}
                     {level.free_spins_daily > 0 && (
                       <View style={styles.benefitItem}>
-                        <Ionicons name="refresh" size={14} color="#2196F3" />
-                        <Text style={styles.benefitText}>{level.free_spins_daily} Free Spins Daily</Text>
+                        <Ionicons name="gift" size={14} color="#2196F3" />
+                        <Text style={styles.benefitText}>{level.free_spins_daily} Lucky Wallet Spins</Text>
                       </View>
                     )}
                     {level.education_discount > 0 && (
@@ -286,7 +286,7 @@ export default function VIPScreen() {
                     {level.exclusive_games && (
                       <View style={styles.benefitItem}>
                         <Ionicons name="star" size={14} color="#E91E63" />
-                        <Text style={styles.benefitText}>Exclusive Games</Text>
+                        <Text style={styles.benefitText}>Exclusive Features</Text>
                       </View>
                     )}
                   </View>
