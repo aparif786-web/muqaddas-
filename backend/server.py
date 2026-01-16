@@ -142,7 +142,7 @@ VIP_LEVELS_DATA = [
         "name": "Basic",
         "recharge_requirement": 0,
         "monthly_fee": 0,
-        "gaming_bonus": 0,
+        "charity_bonus": 0,
         "free_spins_daily": 0,
         "education_discount": 0,
         "priority_support": False,
