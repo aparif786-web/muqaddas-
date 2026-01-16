@@ -3102,6 +3102,544 @@ async def get_host_leaderboard():
     
     return {"leaderboard": leaderboard}
 
+# ==================== EDUCATION PLATFORM ====================
+
+"""
+EDUCATION PLATFORM FEATURES:
+1. Gamified Learning - Courses with rewards
+2. Mind Games - Cognitive skill enhancement games
+3. Quizzes & Challenges - Knowledge testing with rewards
+4. Learning Levels - Progress tracking (Seedling to Legend)
+5. Study Groups - Peer-to-peer learning
+6. Career Guidance - Counseling services
+7. Charity Integration - Part of income to charity
+"""
+
+# Learning Levels (Labels)
+LEARNING_LEVELS = {
+    "seedling": {"min_hours": 0, "reward": 500, "badge_color": "#4CAF50"},
+    "sprout": {"min_hours": 10, "reward": 1500, "badge_color": "#8BC34A"},
+    "tree": {"min_hours": 25, "reward": 5000, "badge_color": "#CDDC39"},
+    "star_learner": {"min_hours": 50, "reward": 15000, "badge_color": "#FFEB3B"},
+    "diamond_scholar": {"min_hours": 100, "reward": 35000, "badge_color": "#03A9F4"},
+    "master_guru": {"min_hours": 200, "reward": 75000, "badge_color": "#9C27B0"},
+    "legend": {"min_hours": 500, "reward": 200000, "badge_color": "#FFD700"},
+}
+
+# Course Categories
+COURSE_CATEGORIES = [
+    "Mathematics", "Science", "English", "Computer Science", 
+    "Business", "Arts", "Languages", "Life Skills", "Mind Games"
+]
+
+# Mind Games Configuration
+MIND_GAMES = [
+    {
+        "game_id": "memory_match",
+        "name": "Memory Match",
+        "description": "Match pairs to improve memory",
+        "category": "Mind Games",
+        "difficulty": "easy",
+        "coins_reward": 50,
+        "time_limit_seconds": 120
+    },
+    {
+        "game_id": "math_puzzle",
+        "name": "Math Puzzle",
+        "description": "Solve math problems quickly",
+        "category": "Mind Games",
+        "difficulty": "medium",
+        "coins_reward": 100,
+        "time_limit_seconds": 60
+    },
+    {
+        "game_id": "word_scramble",
+        "name": "Word Scramble",
+        "description": "Unscramble words to build vocabulary",
+        "category": "Mind Games",
+        "difficulty": "easy",
+        "coins_reward": 50,
+        "time_limit_seconds": 90
+    },
+    {
+        "game_id": "logic_puzzle",
+        "name": "Logic Puzzle",
+        "description": "Solve logical reasoning challenges",
+        "category": "Mind Games",
+        "difficulty": "hard",
+        "coins_reward": 200,
+        "time_limit_seconds": 180
+    },
+    {
+        "game_id": "pattern_recognition",
+        "name": "Pattern Recognition",
+        "description": "Identify patterns and sequences",
+        "category": "Mind Games",
+        "difficulty": "medium",
+        "coins_reward": 100,
+        "time_limit_seconds": 120
+    },
+]
+
+EDUCATION_CONFIG = {
+    "quiz_correct_reward": 10,  # Coins per correct answer
+    "quiz_completion_bonus": 50,  # Bonus for completing quiz
+    "course_completion_bonus": 500,  # Bonus for completing course
+    "daily_learning_target_minutes": 30,
+    "daily_learning_reward": 100,
+    "charity_percent": 5,  # 5% of education income to charity
+}
+
+@api_router.get("/education/config")
+async def get_education_config():
+    """Get education platform configuration"""
+    return {
+        "learning_levels": LEARNING_LEVELS,
+        "categories": COURSE_CATEGORIES,
+        "mind_games": MIND_GAMES,
+        "config": EDUCATION_CONFIG
+    }
+
+@api_router.get("/education/profile")
+async def get_education_profile(current_user: User = Depends(get_current_user)):
+    """Get user's education profile and progress"""
+    
+    profile = await db.education_profiles.find_one(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    )
+    
+    if not profile:
+        profile = {
+            "user_id": current_user.user_id,
+            "current_level": "seedling",
+            "total_learning_hours": 0,
+            "courses_completed": 0,
+            "quizzes_completed": 0,
+            "games_played": 0,
+            "total_coins_earned": 0,
+            "daily_streak": 0,
+            "last_learning_date": None,
+            "badges": [],
+            "created_at": datetime.now(timezone.utc)
+        }
+        await db.education_profiles.insert_one(profile)
+    
+    # Calculate current level
+    hours = profile.get("total_learning_hours", 0)
+    current_level = "seedling"
+    for level, info in sorted(LEARNING_LEVELS.items(), key=lambda x: x[1]["min_hours"], reverse=True):
+        if hours >= info["min_hours"]:
+            current_level = level
+            break
+    
+    # Get today's learning stats
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    today_learning = await db.learning_sessions.aggregate([
+        {"$match": {"user_id": current_user.user_id, "date": today}},
+        {"$group": {"_id": None, "total_minutes": {"$sum": "$duration_minutes"}}}
+    ]).to_list(1)
+    
+    today_minutes = today_learning[0].get("total_minutes", 0) if today_learning else 0
+    
+    # Get enrolled courses
+    enrolled_courses = await db.course_enrollments.find(
+        {"user_id": current_user.user_id},
+        {"_id": 0}
+    ).to_list(50)
+    
+    level_info = LEARNING_LEVELS.get(current_level, LEARNING_LEVELS["seedling"])
+    next_level = None
+    for lvl, info in sorted(LEARNING_LEVELS.items(), key=lambda x: x[1]["min_hours"]):
+        if info["min_hours"] > hours:
+            next_level = {"name": lvl, **info}
+            break
+    
+    return {
+        **profile,
+        "current_level": current_level,
+        "level_info": level_info,
+        "next_level": next_level,
+        "hours_to_next_level": next_level["min_hours"] - hours if next_level else 0,
+        "today_learning_minutes": today_minutes,
+        "daily_target_minutes": EDUCATION_CONFIG["daily_learning_target_minutes"],
+        "enrolled_courses": enrolled_courses,
+        "all_levels": LEARNING_LEVELS
+    }
+
+@api_router.get("/education/courses")
+async def get_courses(
+    category: Optional[str] = None,
+    difficulty: Optional[str] = None
+):
+    """Get available courses"""
+    
+    # Sample courses (in real app, these would be in database)
+    courses = [
+        {
+            "course_id": "math_basics",
+            "title": "Mathematics Fundamentals",
+            "description": "Learn basic math concepts",
+            "category": "Mathematics",
+            "difficulty": "beginner",
+            "duration_hours": 10,
+            "lessons_count": 20,
+            "price": 0,  # Free
+            "rating": 4.5,
+            "enrollments": 1250,
+            "instructor": "Prof. Ahmed Khan",
+            "rewards": {"completion_coins": 500, "per_lesson_coins": 20}
+        },
+        {
+            "course_id": "english_speaking",
+            "title": "English Speaking Skills",
+            "description": "Improve your spoken English",
+            "category": "English",
+            "difficulty": "beginner",
+            "duration_hours": 15,
+            "lessons_count": 30,
+            "price": 0,
+            "rating": 4.7,
+            "enrollments": 2100,
+            "instructor": "Sarah Wilson",
+            "rewards": {"completion_coins": 750, "per_lesson_coins": 20}
+        },
+        {
+            "course_id": "computer_basics",
+            "title": "Computer Fundamentals",
+            "description": "Learn basic computer skills",
+            "category": "Computer Science",
+            "difficulty": "beginner",
+            "duration_hours": 8,
+            "lessons_count": 16,
+            "price": 0,
+            "rating": 4.6,
+            "enrollments": 1800,
+            "instructor": "Tech Expert Ali",
+            "rewards": {"completion_coins": 400, "per_lesson_coins": 20}
+        },
+        {
+            "course_id": "business_skills",
+            "title": "Business & Entrepreneurship",
+            "description": "Learn business fundamentals",
+            "category": "Business",
+            "difficulty": "intermediate",
+            "duration_hours": 20,
+            "lessons_count": 40,
+            "price": 500,  # Premium
+            "rating": 4.8,
+            "enrollments": 950,
+            "instructor": "Business Coach Hassan",
+            "rewards": {"completion_coins": 1000, "per_lesson_coins": 25}
+        },
+        {
+            "course_id": "mind_training",
+            "title": "Mind Training & Focus",
+            "description": "Enhance cognitive abilities",
+            "category": "Mind Games",
+            "difficulty": "all",
+            "duration_hours": 5,
+            "lessons_count": 10,
+            "price": 0,
+            "rating": 4.9,
+            "enrollments": 3200,
+            "instructor": "Mind Coach",
+            "rewards": {"completion_coins": 300, "per_lesson_coins": 30}
+        },
+    ]
+    
+    # Filter by category
+    if category:
+        courses = [c for c in courses if c["category"] == category]
+    
+    # Filter by difficulty
+    if difficulty:
+        courses = [c for c in courses if c["difficulty"] == difficulty or c["difficulty"] == "all"]
+    
+    return {"courses": courses, "total": len(courses)}
+
+class EnrollCourseRequest(BaseModel):
+    course_id: str
+
+@api_router.post("/education/enroll")
+async def enroll_in_course(
+    request: EnrollCourseRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Enroll in a course"""
+    
+    # Check if already enrolled
+    existing = await db.course_enrollments.find_one({
+        "user_id": current_user.user_id,
+        "course_id": request.course_id
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="Already enrolled in this course")
+    
+    enrollment = {
+        "enrollment_id": f"enroll_{uuid.uuid4().hex[:12]}",
+        "user_id": current_user.user_id,
+        "course_id": request.course_id,
+        "progress_percent": 0,
+        "lessons_completed": 0,
+        "total_lessons": 20,  # Would come from course data
+        "coins_earned": 0,
+        "started_at": datetime.now(timezone.utc),
+        "last_accessed": datetime.now(timezone.utc),
+        "status": "in_progress"
+    }
+    
+    await db.course_enrollments.insert_one(enrollment)
+    
+    # Update education profile
+    await db.education_profiles.update_one(
+        {"user_id": current_user.user_id},
+        {"$set": {"updated_at": datetime.now(timezone.utc)}},
+        upsert=True
+    )
+    
+    return {"success": True, "enrollment": enrollment}
+
+class CompleteLessonRequest(BaseModel):
+    course_id: str
+    lesson_id: str
+    duration_minutes: int
+
+@api_router.post("/education/complete-lesson")
+async def complete_lesson(
+    request: CompleteLessonRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Complete a lesson and earn rewards"""
+    
+    enrollment = await db.course_enrollments.find_one({
+        "user_id": current_user.user_id,
+        "course_id": request.course_id
+    })
+    
+    if not enrollment:
+        raise HTTPException(status_code=404, detail="Not enrolled in this course")
+    
+    # Award coins for lesson
+    coins_earned = 20  # Per lesson reward
+    
+    # Update wallet
+    await db.wallets.update_one(
+        {"user_id": current_user.user_id},
+        {
+            "$inc": {"coins_balance": coins_earned},
+            "$set": {"updated_at": datetime.now(timezone.utc)}
+        }
+    )
+    
+    # Update enrollment
+    new_lessons = enrollment["lessons_completed"] + 1
+    new_progress = min(100, (new_lessons / enrollment["total_lessons"]) * 100)
+    
+    await db.course_enrollments.update_one(
+        {"user_id": current_user.user_id, "course_id": request.course_id},
+        {
+            "$inc": {"lessons_completed": 1, "coins_earned": coins_earned},
+            "$set": {
+                "progress_percent": new_progress,
+                "last_accessed": datetime.now(timezone.utc),
+                "status": "completed" if new_progress >= 100 else "in_progress"
+            }
+        }
+    )
+    
+    # Record learning session
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    await db.learning_sessions.insert_one({
+        "session_id": f"learn_{uuid.uuid4().hex[:12]}",
+        "user_id": current_user.user_id,
+        "course_id": request.course_id,
+        "lesson_id": request.lesson_id,
+        "duration_minutes": request.duration_minutes,
+        "coins_earned": coins_earned,
+        "date": today,
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Update education profile
+    hours_added = request.duration_minutes / 60
+    await db.education_profiles.update_one(
+        {"user_id": current_user.user_id},
+        {
+            "$inc": {
+                "total_learning_hours": hours_added,
+                "total_coins_earned": coins_earned
+            },
+            "$set": {
+                "last_learning_date": today,
+                "updated_at": datetime.now(timezone.utc)
+            }
+        },
+        upsert=True
+    )
+    
+    # Create transaction
+    await db.wallet_transactions.insert_one({
+        "transaction_id": f"txn_{uuid.uuid4().hex[:12]}",
+        "user_id": current_user.user_id,
+        "transaction_type": "education_reward",
+        "amount": coins_earned,
+        "currency_type": "coins",
+        "status": TransactionStatus.COMPLETED,
+        "description": f"Completed lesson in {request.course_id}",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Check if course completed
+    bonus_earned = 0
+    if new_progress >= 100:
+        bonus_earned = EDUCATION_CONFIG["course_completion_bonus"]
+        await db.wallets.update_one(
+            {"user_id": current_user.user_id},
+            {"$inc": {"coins_balance": bonus_earned}}
+        )
+        
+        await db.education_profiles.update_one(
+            {"user_id": current_user.user_id},
+            {"$inc": {"courses_completed": 1}}
+        )
+        
+        await db.notifications.insert_one({
+            "notification_id": f"notif_{uuid.uuid4().hex[:12]}",
+            "user_id": current_user.user_id,
+            "title": "Course Completed! 🎓",
+            "message": f"Congratulations! You completed the course and earned {bonus_earned} bonus coins!",
+            "notification_type": "education",
+            "is_read": False,
+            "action_url": "/education",
+            "created_at": datetime.now(timezone.utc)
+        })
+    
+    return {
+        "success": True,
+        "coins_earned": coins_earned,
+        "bonus_earned": bonus_earned,
+        "new_progress": new_progress,
+        "is_course_completed": new_progress >= 100
+    }
+
+# Mind Games
+@api_router.get("/education/mind-games")
+async def get_mind_games():
+    """Get available mind games"""
+    return {"games": MIND_GAMES}
+
+class PlayMindGameRequest(BaseModel):
+    game_id: str
+    score: int
+    time_taken_seconds: int
+
+@api_router.post("/education/play-mind-game")
+async def play_mind_game(
+    request: PlayMindGameRequest,
+    current_user: User = Depends(get_current_user)
+):
+    """Submit mind game result and earn rewards"""
+    
+    # Find the game
+    game = next((g for g in MIND_GAMES if g["game_id"] == request.game_id), None)
+    if not game:
+        raise HTTPException(status_code=404, detail="Game not found")
+    
+    # Calculate rewards based on score and time
+    max_score = 100
+    score_percent = min(100, (request.score / max_score) * 100)
+    
+    # Reward calculation: Higher score = more coins
+    base_reward = game["coins_reward"]
+    earned_reward = int(base_reward * (score_percent / 100))
+    
+    # Time bonus: Faster = more coins
+    if request.time_taken_seconds < game["time_limit_seconds"] * 0.5:
+        earned_reward = int(earned_reward * 1.5)  # 50% bonus for fast completion
+    
+    # Award coins
+    await db.wallets.update_one(
+        {"user_id": current_user.user_id},
+        {
+            "$inc": {"coins_balance": earned_reward},
+            "$set": {"updated_at": datetime.now(timezone.utc)}
+        }
+    )
+    
+    # Record game
+    await db.mind_game_records.insert_one({
+        "record_id": f"game_{uuid.uuid4().hex[:12]}",
+        "user_id": current_user.user_id,
+        "game_id": request.game_id,
+        "score": request.score,
+        "time_taken_seconds": request.time_taken_seconds,
+        "coins_earned": earned_reward,
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    # Update education profile
+    await db.education_profiles.update_one(
+        {"user_id": current_user.user_id},
+        {
+            "$inc": {"games_played": 1, "total_coins_earned": earned_reward},
+            "$set": {"updated_at": datetime.now(timezone.utc)}
+        },
+        upsert=True
+    )
+    
+    # Create transaction
+    await db.wallet_transactions.insert_one({
+        "transaction_id": f"txn_{uuid.uuid4().hex[:12]}",
+        "user_id": current_user.user_id,
+        "transaction_type": "mind_game_reward",
+        "amount": earned_reward,
+        "currency_type": "coins",
+        "status": TransactionStatus.COMPLETED,
+        "description": f"Mind Game: {game['name']} - Score: {request.score}",
+        "created_at": datetime.now(timezone.utc)
+    })
+    
+    return {
+        "success": True,
+        "game": game["name"],
+        "score": request.score,
+        "score_percent": score_percent,
+        "coins_earned": earned_reward,
+        "time_taken": request.time_taken_seconds,
+        "time_limit": game["time_limit_seconds"]
+    }
+
+@api_router.get("/education/leaderboard")
+async def get_education_leaderboard():
+    """Get education leaderboard"""
+    
+    # Top learners by hours
+    pipeline = [
+        {"$sort": {"total_learning_hours": -1}},
+        {"$limit": 20}
+    ]
+    
+    top_learners = await db.education_profiles.aggregate(pipeline).to_list(20)
+    
+    leaderboard = []
+    for i, learner in enumerate(top_learners):
+        user = await db.users.find_one(
+            {"user_id": learner["user_id"]},
+            {"_id": 0, "user_id": 1, "name": 1, "picture": 1}
+        )
+        if user:
+            leaderboard.append({
+                "rank": i + 1,
+                "user": user,
+                "total_hours": learner.get("total_learning_hours", 0),
+                "courses_completed": learner.get("courses_completed", 0),
+                "current_level": learner.get("current_level", "seedling")
+            })
+    
+    return {"leaderboard": leaderboard}
+
 # ==================== HEALTH CHECK ====================
 
 @api_router.get("/")
