@@ -323,12 +323,61 @@ export default function ProfileScreen() {
             </TouchableOpacity>
 
             {/* App Version */}
-            <Text style={styles.versionText}>Version 1.0.0</Text>
+            <Text style={styles.versionText}>Gyan Sultanat v1.0.0</Text>
 
             <View style={{ height: 20 }} />
           </ScrollView>
         </SafeAreaView>
       </LinearGradient>
+      
+      {/* Withdraw Modal */}
+      <Modal
+        visible={showWithdrawModal}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setShowWithdrawModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>💸 Withdraw Earnings</Text>
+              <TouchableOpacity onPress={() => setShowWithdrawModal(false)}>
+                <Ionicons name="close" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={styles.modalBody}>
+              <Text style={styles.withdrawLabel}>Available to Withdraw:</Text>
+              <Text style={styles.withdrawAvailable}>
+                {wallet?.withdrawable_balance?.toLocaleString() || '0'} Coins
+              </Text>
+              
+              <Text style={styles.withdrawNote}>
+                Minimum withdrawal: 100 coins{'\n'}
+                Processing time: 24-48 hours
+              </Text>
+              
+              <TouchableOpacity 
+                style={styles.withdrawSubmitBtn}
+                onPress={() => {
+                  Alert.alert(
+                    'Withdrawal Requested',
+                    'Your withdrawal request has been submitted. Processing time is 24-48 hours.',
+                    [{ text: 'OK', onPress: () => setShowWithdrawModal(false) }]
+                  );
+                }}
+              >
+                <LinearGradient
+                  colors={['#FF9800', '#F57C00']}
+                  style={styles.withdrawSubmitGradient}
+                >
+                  <Text style={styles.withdrawSubmitText}>Request Withdrawal</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
