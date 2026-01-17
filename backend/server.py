@@ -15,6 +15,15 @@ from decimal import Decimal
 from enum import Enum
 import random
 from openai import AsyncOpenAI
+import qrcode
+import io
+import base64
+import hashlib
+from cryptography.fernet import Fernet
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from fastapi.responses import StreamingResponse
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
