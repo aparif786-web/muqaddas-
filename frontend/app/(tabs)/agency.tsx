@@ -114,7 +114,7 @@ export default function AgencyScreen() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#1A1A2E', '#16213E', '#0F3460']}
+        colors={["#1A1A2E', '#16213E', '#0F3460"] as const}
         style={styles.gradient}
       >
         <SafeAreaView style={styles.safeArea}>

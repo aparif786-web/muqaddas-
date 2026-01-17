@@ -91,7 +91,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#1A1A2E', '#16213E', '#0F3460']}
+        colors={["#1A1A2E', '#16213E', '#0F3460"] as const}
         style={styles.gradient}
       >
         <SafeAreaView style={styles.safeArea}>
@@ -125,7 +125,7 @@ export default function HomeScreen() {
             {/* VIP Card */}
             <TouchableOpacity onPress={() => router.push('/(tabs)/vip')}>
               <LinearGradient
-                colors={vipStatus ? getVIPGradient(vipStatus.vip_level) : ['#404040', '#303030']}
+                colors={vipStatus ? getVIPGradient(vipStatus.vip_level) : ['#404040', '#303030"] as const}
                 style={styles.vipCard}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
@@ -202,7 +202,7 @@ export default function HomeScreen() {
                   onPress={() => router.push('/(tabs)/wallet')}
                 >
                   <LinearGradient
-                    colors={['#4CAF50', '#45a049']}
+                    colors={["#4CAF50', '#45a049"] as const}
                     style={styles.actionIconContainer}
                   >
                     <Ionicons name="add" size={24} color="#FFFFFF" />
@@ -215,7 +215,7 @@ export default function HomeScreen() {
                   onPress={() => router.push('/(tabs)/wallet')}
                 >
                   <LinearGradient
-                    colors={['#2196F3', '#1976D2']}
+                    colors={["#2196F3', '#1976D2"] as const}
                     style={styles.actionIconContainer}
                   >
                     <Ionicons name="arrow-up" size={24} color="#FFFFFF" />
@@ -228,7 +228,7 @@ export default function HomeScreen() {
                   onPress={() => router.push('/(tabs)/vip')}
                 >
                   <LinearGradient
-                    colors={['#FFD700', '#FFA500']}
+                    colors={["#FFD700', '#FFA500"] as const}
                     style={styles.actionIconContainer}
                   >
                     <Ionicons name="diamond" size={24} color="#1A1A2E" />
@@ -238,7 +238,7 @@ export default function HomeScreen() {
 
                 <TouchableOpacity style={styles.actionButton}>
                   <LinearGradient
-                    colors={['#9C27B0', '#7B1FA2']}
+                    colors={["#9C27B0', '#7B1FA2"] as const}
                     style={styles.actionIconContainer}
                   >
                     <Ionicons name="game-controller" size={24} color="#FFFFFF" />
