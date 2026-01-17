@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Gyan Sultanat",
-    "slug": "gyan-sultanat",
+    "slug": "mugaddas-network",
     "version": "1.0.0",
     "description": "Gyaan se Aay, Apne Sapne Sajaye! - India's #1 Education & Earning Platform",
     "orientation": "portrait",
@@ -41,6 +41,7 @@
       "eas": {
         "projectId": "59db773b-0bd4-4c7c-bc04-e2a361f880ad"
       }
-    }
+    },
+    "owner": "muqaddas_network"
   }
 }
