@@ -45,7 +45,7 @@ export default function RewardsScreen() {
   
   const progressAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const trackingInterval = useRef<NodeJS.Timeout | null>(null);
+  const trackingInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   const appState = useRef(AppState.currentState);
 
   const fetchData = async () => {
