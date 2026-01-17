@@ -87,9 +87,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace 'com.mugaddas.network'
+    namespace 'com.gyansultanat.app'
     defaultConfig {
-        applicationId 'com.mugaddas.network'
+        applicationId 'com.gyansultanat.app'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1

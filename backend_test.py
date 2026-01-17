@@ -10,7 +10,7 @@ import sys
 from datetime import datetime
 
 # Test configuration
-BASE_URL = "https://learn-play-give.preview.emergentagent.com/api"
+BASE_URL = "https://sultanedu.preview.emergentagent.com/api"
 SESSION_TOKEN = "test_session_1768579042684"  # From mongosh command
 USER_ID = "user_1768579042684"
 

@@ -7,7 +7,7 @@
     <key>CFBundleDevelopmentRegion</key>
     <string>$(DEVELOPMENT_LANGUAGE)</string>
     <key>CFBundleDisplayName</key>
-    <string>Mugaddas Network</string>
+    <string>Gyan Sultanat</string>
     <key>CFBundleExecutable</key>
     <string>$(EXECUTABLE_NAME)</string>
     <key>CFBundleIdentifier</key>
@@ -27,8 +27,8 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>mugaddasnetwork</string>
-          <string>com.mugaddas.network</string>
+          <string>gyansultanat</string>
+          <string>com.gyansultanat.app</string>
         </array>
       </dict>
     </array>

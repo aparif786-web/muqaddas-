@@ -1,4 +1,4 @@
-package com.mugaddas.network
+package com.gyansultanat.app
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build
