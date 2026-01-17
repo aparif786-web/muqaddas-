@@ -4660,7 +4660,7 @@ def get_crown_color(crown_type: CrownType) -> str:
     return colors.get(crown_type, "#808080")
 
 @api_router.get("/crowns/my-crowns")
-async def get_my_crowns(user_id: str = Depends(get_current_user_id)):
+async def get_my_crowns(user_id: str = Depends(get_current_user)):
     """Get all crowns earned by the current user"""
     crowns = await db.user_crowns.find({"user_id": user_id, "is_active": True}).to_list(100)
     return {
@@ -4676,7 +4676,7 @@ async def get_my_crowns(user_id: str = Depends(get_current_user_id)):
     }
 
 @api_router.post("/crowns/check-eligibility")
-async def check_crown_eligibility(user_id: str = Depends(get_current_user_id)):
+async def check_crown_eligibility(user_id: str = Depends(get_current_user)):
     """Check if user is eligible for any new crowns"""
     # Get user stats
     user_stats = await db.user_stats.find_one({"user_id": user_id}) or {}
@@ -4719,7 +4719,7 @@ async def check_crown_eligibility(user_id: str = Depends(get_current_user_id)):
     }
 
 @api_router.post("/crowns/claim/{crown_type}")
-async def claim_crown(crown_type: str, user_id: str = Depends(get_current_user_id)):
+async def claim_crown(crown_type: str, user_id: str = Depends(get_current_user)):
     """Claim an eligible crown"""
     # Verify eligibility
     eligibility = await check_crown_eligibility(user_id)
@@ -4899,7 +4899,7 @@ async def get_active_mha_events():
     }
 
 @api_router.post("/events/mha/join/{event_id}")
-async def join_mha_event(event_id: str, user_id: str = Depends(get_current_user_id)):
+async def join_mha_event(event_id: str, user_id: str = Depends(get_current_user)):
     """Join an MHA event"""
     # Check event exists and is active
     event = await db.mha_events.find_one({"event_id": event_id, "is_active": True})
