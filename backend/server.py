@@ -4660,8 +4660,9 @@ def get_crown_color(crown_type: CrownType) -> str:
     return colors.get(crown_type, "#808080")
 
 @api_router.get("/crowns/my-crowns")
-async def get_my_crowns(user_id: str = Depends(get_current_user)):
+async def get_my_crowns(user: User = Depends(get_current_user)):
     """Get all crowns earned by the current user"""
+    user_id = user.user_id
     crowns = await db.user_crowns.find({"user_id": user_id, "is_active": True}).to_list(100)
     return {
         "crowns": [{
@@ -4676,8 +4677,9 @@ async def get_my_crowns(user_id: str = Depends(get_current_user)):
     }
 
 @api_router.post("/crowns/check-eligibility")
-async def check_crown_eligibility(user_id: str = Depends(get_current_user)):
+async def check_crown_eligibility(user: User = Depends(get_current_user)):
     """Check if user is eligible for any new crowns"""
+    user_id = user.user_id
     # Get user stats
     user_stats = await db.user_stats.find_one({"user_id": user_id}) or {}
     total_likes = user_stats.get("total_likes_received", 0)
