@@ -15,6 +15,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../src/contexts/AuthContext';
 import api from '../../src/services/api';
+import sultanFeedback from '../../src/utils/sultanFeedback';
 
 const { width } = Dimensions.get('window');
 
