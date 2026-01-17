@@ -285,6 +285,68 @@ class TalentAdvertisement(BaseModel):
     created_at: datetime
     expires_at: datetime
 
+# ==================== AI TEACHER SYSTEM ====================
+
+class AITeacherSubject(str, Enum):
+    MATHEMATICS = "mathematics"
+    SCIENCE = "science"
+    HISTORY = "history"
+    GEOGRAPHY = "geography"
+    LANGUAGE = "language"
+    BUSINESS = "business"
+    LAW = "law"
+    HEALTH = "health"
+    TECHNOLOGY = "technology"
+    PSYCHOLOGY = "psychology"
+    FINANCE = "finance"
+    GENERAL = "general"
+
+class AITeacherQuery(BaseModel):
+    query_id: str
+    user_id: str
+    subject: AITeacherSubject
+    question: str
+    answer: Optional[str] = None
+    confidence_score: float = 0.0
+    sources: List[str] = []
+    helpful_votes: int = 0
+    created_at: datetime
+    answered_at: Optional[datetime] = None
+
+class AITeacherSession(BaseModel):
+    session_id: str
+    user_id: str
+    subject: AITeacherSubject
+    messages: List[dict] = []  # Chat history
+    started_at: datetime
+    ended_at: Optional[datetime] = None
+    total_questions: int = 0
+    satisfaction_rating: Optional[float] = None
+
+class EducationalAd(BaseModel):
+    ad_id: str
+    company_name: str
+    company_description: str
+    educational_content: str  # How AI explains this company
+    target_subjects: List[str]
+    trust_score: float = 0.0
+    user_reviews: int = 0
+    is_verified: bool = False
+    created_at: datetime
+
+# AI Teacher Configuration
+AI_TEACHER_CONFIG = {
+    "max_questions_per_day_free": 10,
+    "max_questions_per_day_vip": 100,
+    "response_languages": ["Hindi", "English", "Bengali", "Tamil", "Telugu"],
+    "trust_building_features": [
+        "Source citation",
+        "Fact verification",
+        "Expert review badge",
+        "Community validation"
+    ]
+}
+
 # Registration Fee Config
 TALENT_REGISTRATION_FEE = 1.0  # ₹1 initial fee
 
