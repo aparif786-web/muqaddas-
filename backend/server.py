@@ -7874,6 +7874,105 @@ async def get_recharge_packages():
         "payment_methods": ["upi", "card", "net_banking"]
     }
 
+# ==================== SULTAN'S OFFICIAL IDENTITY API ====================
+
+@api_router.get("/sultan/identity")
+async def get_sultan_official_identity():
+    """
+    Get Sultan's Official Identity for verification
+    All payments go to this verified account
+    """
+    return {
+        "success": True,
+        "owner": {
+            "name": SULTAN_IDENTITY["name"],
+            "title": "Founder & CEO - Gyan Sultanat",
+            "phone": SULTAN_IDENTITY["phone"],
+            "business": SULTAN_IDENTITY["business_name"]
+        },
+        "banking": {
+            "bank_name": SULTAN_IDENTITY["bank"]["name"],
+            "branch": SULTAN_IDENTITY["bank"]["branch"],
+            "account_no_masked": f"XXXX{SULTAN_IDENTITY['bank']['account_no'][-4:]}",
+            "ifsc": SULTAN_IDENTITY["bank"]["ifsc"]
+        },
+        "upi": {
+            "primary": SULTAN_UPI_ID,
+            "alternate": SULTAN_UPI_ID_ALT
+        },
+        "verification": {
+            "pan_verified": True,
+            "aadhar_verified": True,
+            "gstin_verified": True,
+            "pan_masked": f"XXXXX{SULTAN_IDENTITY['pan_card'][-4:]}",
+            "gstin": SULTAN_IDENTITY["gstin"]
+        },
+        "seal": {
+            "verification_key": SULTAN_MASTER_SIGNATURE["verification_key"],
+            "status": "✅ VERIFIED & SECURED"
+        }
+    }
+
+@api_router.get("/sultan/bank-details")
+async def get_sultan_bank_details():
+    """
+    Get Sultan's Bank Details for direct bank transfer
+    For large transactions or international payments
+    """
+    return {
+        "success": True,
+        "account_holder": SULTAN_IDENTITY["name"],
+        "bank": {
+            "name": SULTAN_IDENTITY["bank"]["name"],
+            "branch": SULTAN_IDENTITY["bank"]["branch"],
+            "account_number": SULTAN_IDENTITY["bank"]["account_no"],
+            "ifsc_code": SULTAN_IDENTITY["bank"]["ifsc"],
+            "account_type": "Savings"
+        },
+        "upi_ids": [
+            {"id": SULTAN_UPI_ID, "app": "PhonePe", "primary": True},
+            {"id": SULTAN_UPI_ID_ALT, "app": "Bank", "primary": False}
+        ],
+        "pan_card": SULTAN_IDENTITY["pan_card"],
+        "gstin": SULTAN_IDENTITY["gstin"],
+        "business_name": SULTAN_IDENTITY["business_name"],
+        "note": "সরাসরি ব্যাংক ট্রান্সফারের জন্য এই details ব্যবহার করুন"
+    }
+
+@api_router.get("/payment/sultan-qr")
+async def get_sultan_payment_qr(amount: float = 0):
+    """
+    Generate QR code for direct payment to Sultan
+    Uses Sultan's real UPI ID
+    """
+    # Create UPI deep link with Sultan's real UPI ID
+    if amount > 0:
+        upi_link = f"upi://pay?pa={SULTAN_UPI_ID}&pn=Gyan%20Sultanat&am={amount}&cu=INR&tn=Payment%20to%20Gyan%20Sultanat"
+    else:
+        upi_link = f"upi://pay?pa={SULTAN_UPI_ID}&pn=Gyan%20Sultanat&cu=INR&tn=Payment%20to%20Gyan%20Sultanat"
+    
+    # Generate QR code
+    qr = qrcode.QRCode(version=5, error_correction=qrcode.constants.ERROR_CORRECT_H, box_size=12, border=2)
+    qr.add_data(upi_link)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="#1a1a2e", back_color="#ffffff")
+    
+    buffer = io.BytesIO()
+    img.save(buffer, format='PNG')
+    buffer.seek(0)
+    qr_base64 = f"data:image/png;base64,{base64.b64encode(buffer.getvalue()).decode()}"
+    
+    return {
+        "success": True,
+        "qr_code": qr_base64,
+        "upi_link": upi_link,
+        "upi_id": SULTAN_UPI_ID,
+        "payee_name": SULTAN_IDENTITY["name"],
+        "amount": f"₹{amount:,.2f}" if amount > 0 else "Enter Amount",
+        "note": "স্ক্যান করুন এবং সরাসরি Sultan-কে পেমেন্ট করুন!",
+        "supported_apps": ["Google Pay", "PhonePe", "Paytm", "BHIM", "Amazon Pay"]
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
