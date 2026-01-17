@@ -3269,7 +3269,9 @@ async def get_education_profile(current_user: User = Depends(get_current_user)):
         "hours_to_next_level": next_level["min_hours"] - hours if next_level else 0,
         "today_learning_minutes": today_minutes,
         "daily_target_minutes": EDUCATION_CONFIG["daily_learning_target_minutes"],
-        "enrolled_courses": enrolled_courses,
+        "enrolled_courses": enrolled_courses_clean,
+        "courses_enrolled": len(enrolled_courses_clean),
+        "streak_days": profile.get("daily_streak", 0),
         "all_levels": LEARNING_LEVELS
     }
 
