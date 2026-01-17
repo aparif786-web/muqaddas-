@@ -7,7 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "mugaddasnetwork",
     "userInterfaceStyle": "dark",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.mugaddas.network"
@@ -18,12 +18,9 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#1a1a2e"
       },
-      "edgeToEdgeEnabled": true,
       "versionCode": 1,
       "permissions": [
         "android.permission.INTERNET",
-        "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
         "android.permission.VIBRATE"
       ]
     },
@@ -33,16 +30,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#1a1a2e"
-        }
-      ]
+      "expo-router"
     ],
     "experiments": {
       "typedRoutes": true
