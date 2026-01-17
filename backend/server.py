@@ -358,6 +358,90 @@ AI_TEACHER_CONFIG = {
 # Registration Fee Config
 TALENT_REGISTRATION_FEE = 1.0  # ₹1 initial fee
 
+# ==================== PRICING & REVENUE MODEL ====================
+
+# Revenue Share Configuration (Company Benefits)
+REVENUE_SHARE_MODEL = {
+    "content_creator": {
+        "creator_share": 70,      # 70% to content creator
+        "platform_share": 25,     # 25% to platform
+        "charity_share": 5,       # 5% to charity
+        "description": "Audio/Video content creators"
+    },
+    "teacher": {
+        "creator_share": 75,      # 75% to teacher
+        "platform_share": 20,     # 20% to platform
+        "charity_share": 5,       # 5% to charity
+        "description": "Educational content & live classes"
+    },
+    "partner_company": {
+        "partner_share": 65,      # 65% to partner company
+        "platform_share": 30,     # 30% to platform
+        "charity_share": 5,       # 5% to charity
+        "description": "Business partners & advertisers"
+    },
+    "affiliate": {
+        "affiliate_share": 15,    # 15% commission
+        "platform_share": 80,     # 80% to platform
+        "charity_share": 5,       # 5% to charity
+        "description": "Referral & affiliate partners"
+    }
+}
+
+# Platform Service Pricing
+PLATFORM_PRICING = {
+    "basic_listing": {
+        "name": "Basic Listing",
+        "price": 0,               # Free
+        "features": ["Profile creation", "Basic visibility", "Limited uploads"],
+        "revenue_share": "Standard (70/25/5)"
+    },
+    "premium_listing": {
+        "name": "Premium Listing",
+        "price": 499,             # ₹499/month
+        "features": ["Featured profile", "Priority search", "Unlimited uploads", "Analytics dashboard"],
+        "revenue_share": "Enhanced (75/20/5)"
+    },
+    "business_listing": {
+        "name": "Business Listing",
+        "price": 1999,            # ₹1999/month
+        "features": ["Top visibility", "Dedicated support", "API access", "Custom branding", "Bulk uploads"],
+        "revenue_share": "Business (80/15/5)"
+    }
+}
+
+# Advertisement Pricing (Per 1000 impressions - CPM)
+AD_PRICING = {
+    "banner_ad": {
+        "name": "Banner Advertisement",
+        "cpm": 50,                # ₹50 per 1000 impressions
+        "description": "Display banner on app screens"
+    },
+    "video_ad": {
+        "name": "Video Advertisement",
+        "cpm": 150,               # ₹150 per 1000 impressions
+        "description": "Pre-roll/Mid-roll video ads"
+    },
+    "sponsored_content": {
+        "name": "Sponsored Content",
+        "cpm": 300,               # ₹300 per 1000 impressions
+        "description": "Native sponsored educational content"
+    },
+    "ai_integration": {
+        "name": "AI Teacher Integration",
+        "cpm": 500,               # ₹500 per 1000 mentions
+        "description": "AI Teacher recommends your product/service"
+    }
+}
+
+# Value Proposition Messages
+VALUE_PROPOSITIONS = {
+    "content_creator": "Upload content, reach millions, earn 70% revenue!",
+    "teacher": "Teach online, get verified, earn 75% from your classes!",
+    "partner_company": "Partner with us, get featured, earn 65% returns!",
+    "advertiser": "Advertise to millions of engaged learners!"
+}
+
 # AI Service Plans
 AI_SERVICE_PLANS = {
     "basic": {
