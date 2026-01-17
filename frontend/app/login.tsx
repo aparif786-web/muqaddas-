@@ -64,19 +64,21 @@ export default function LoginScreen() {
                   colors={['#FFD700', '#FFA500']}
                   style={styles.logoGradient}
                 >
-                  <Ionicons name="diamond" size={48} color="#1A1A2E" />
+                  <Text style={styles.crownEmoji}>👑</Text>
                 </LinearGradient>
               </View>
-              <Text style={styles.title}>VIP Club</Text>
-              <Text style={styles.subtitle}>Wallet & Rewards System</Text>
+              <Text style={styles.title}>GYAN SULTANAT</Text>
+              <Text style={styles.hindiTitle}>ज्ञान सल्तनत</Text>
+              <Text style={styles.subtitle}>The Knowledge Empire</Text>
+              <Text style={styles.tagline}>Jahan Gyan Raja Hai</Text>
             </View>
 
             {/* Features Section */}
             <View style={styles.features}>
-              <FeatureItem icon="wallet" text="Virtual Wallet" />
-              <FeatureItem icon="star" text="VIP Levels" />
-              <FeatureItem icon="gift" text="Exclusive Rewards" />
-              <FeatureItem icon="shield-checkmark" text="Secure Transactions" />
+              <FeatureItem icon="school" text="Education Platform" />
+              <FeatureItem icon="game-controller" text="Gyan Yuddh" />
+              <FeatureItem icon="heart" text="Charity System" />
+              <FeatureItem icon="trophy" text="Rewards & Leaderboard" />
             </View>
 
             {/* Login Button */}
