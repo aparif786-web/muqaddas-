@@ -114,10 +114,12 @@ export default function EducationScreen() {
     setEnrolling(true);
     try {
       await api.post('/education/enroll', { course_id: course.course_id });
+      await sultanFeedback.taskComplete(); // Royal sound + vibration
       await fetchData();
       setSelectedCourse(null);
       alert(`🎉 Successfully enrolled in ${course.title}!`);
     } catch (error: any) {
+      await sultanFeedback.error();
       alert(error.response?.data?.detail || 'Failed to enroll');
     } finally {
       setEnrolling(false);
