@@ -6312,6 +6312,117 @@ async def get_ai_teacher_history(
         "total": len(queries)
     }
 
+# ==================== PRICING & REVENUE APIs ====================
+
+@api_router.get("/pricing/revenue-share")
+async def get_revenue_share_model():
+    """Get revenue share model for different user types"""
+    return {
+        "revenue_models": REVENUE_SHARE_MODEL,
+        "message": "Transparent revenue sharing - You earn more!",
+        "value_propositions": VALUE_PROPOSITIONS
+    }
+
+@api_router.get("/pricing/platform-plans")
+async def get_platform_pricing():
+    """Get platform listing/subscription plans"""
+    return {
+        "plans": PLATFORM_PRICING,
+        "currency": "INR",
+        "message": "Choose a plan that suits your business"
+    }
+
+@api_router.get("/pricing/advertisement")
+async def get_ad_pricing():
+    """Get advertisement pricing (CPM rates)"""
+    return {
+        "ad_types": AD_PRICING,
+        "currency": "INR",
+        "pricing_model": "CPM (Cost Per 1000 Impressions)",
+        "minimum_budget": 1000,  # ₹1000 minimum
+        "message": "Reach millions of engaged learners!"
+    }
+
+@api_router.get("/pricing/company-benefits")
+async def get_company_benefits():
+    """Get all benefits for companies joining the platform"""
+    return {
+        "benefits": [
+            {
+                "title": "High Revenue Share",
+                "description": "Earn up to 70-75% of all revenue generated",
+                "icon": "💰"
+            },
+            {
+                "title": "Massive Audience Reach",
+                "description": "Access millions of engaged learners",
+                "icon": "👥"
+            },
+            {
+                "title": "AI-Powered Promotion",
+                "description": "AI Teacher recommends your content to relevant users",
+                "icon": "🤖"
+            },
+            {
+                "title": "Analytics Dashboard",
+                "description": "Track performance, views, and earnings in real-time",
+                "icon": "📊"
+            },
+            {
+                "title": "Verified Badge",
+                "description": "Get verified badge for trust and credibility",
+                "icon": "✅"
+            },
+            {
+                "title": "Priority Support",
+                "description": "Dedicated support for business partners",
+                "icon": "🎯"
+            }
+        ],
+        "revenue_share": REVENUE_SHARE_MODEL,
+        "pricing": PLATFORM_PRICING,
+        "tagline": "Partner with Gyan Sultanat - Gyaan se Aay, Apne Sapne Sajaye!"
+    }
+
+@api_router.post("/pricing/calculate-earnings")
+async def calculate_potential_earnings(
+    content_type: str = "content_creator",
+    monthly_views: int = 10000,
+    avg_revenue_per_view: float = 0.01  # ₹0.01 per view
+):
+    """Calculate potential earnings for a company/creator"""
+    if content_type not in REVENUE_SHARE_MODEL:
+        content_type = "content_creator"
+    
+    share_model = REVENUE_SHARE_MODEL[content_type]
+    
+    # Calculate based on creator type
+    if "creator_share" in share_model:
+        creator_share_percent = share_model["creator_share"]
+    elif "partner_share" in share_model:
+        creator_share_percent = share_model["partner_share"]
+    elif "teacher_share" in share_model:
+        creator_share_percent = share_model.get("creator_share", 70)
+    else:
+        creator_share_percent = 70
+    
+    total_revenue = monthly_views * avg_revenue_per_view
+    creator_earnings = total_revenue * (creator_share_percent / 100)
+    platform_share = total_revenue * (share_model["platform_share"] / 100)
+    charity_contribution = total_revenue * (share_model["charity_share"] / 100)
+    
+    return {
+        "content_type": content_type,
+        "monthly_views": monthly_views,
+        "total_revenue": round(total_revenue, 2),
+        "your_earnings": round(creator_earnings, 2),
+        "your_share_percent": creator_share_percent,
+        "platform_share": round(platform_share, 2),
+        "charity_contribution": round(charity_contribution, 2),
+        "annual_projection": round(creator_earnings * 12, 2),
+        "message": f"You can earn ₹{round(creator_earnings, 2)} monthly with {monthly_views:,} views!"
+    }
+
 # ==================== EDUCATIONAL ADS (Company Promotion) APIs ====================
 
 class RegisterEducationalAdRequest(BaseModel):
