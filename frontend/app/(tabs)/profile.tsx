@@ -176,27 +176,115 @@ export default function ProfileScreen() {
               )}
             </View>
 
-            {/* Stats Row */}
+            {/* Wallet Section - SULTAN's PSYCHOLOGY: Withdraw here, not on home */}
+            <View style={styles.walletSection}>
+              <View style={styles.walletHeader}>
+                <Ionicons name="wallet" size={20} color="#FFD700" />
+                <Text style={styles.walletTitle}>My Wallet</Text>
+              </View>
+              
+              {/* Triple Wallet Display */}
+              <View style={styles.tripleWallet}>
+                <View style={styles.walletCard}>
+                  <LinearGradient
+                    colors={['#4CAF50', '#2E7D32']}
+                    style={styles.walletCardGradient}
+                  >
+                    <Ionicons name="wallet" size={24} color="#FFFFFF" />
+                    <Text style={styles.walletCardLabel}>Main Balance</Text>
+                    <Text style={styles.walletCardAmount}>
+                      {wallet?.coins_balance?.toLocaleString() || '0'}
+                    </Text>
+                    <Text style={styles.walletCardCurrency}>Coins</Text>
+                  </LinearGradient>
+                </View>
+                
+                <View style={styles.walletCard}>
+                  <LinearGradient
+                    colors={['#FFD700', '#FFA500']}
+                    style={styles.walletCardGradient}
+                  >
+                    <Ionicons name="trending-up" size={24} color="#1A1A2E" />
+                    <Text style={[styles.walletCardLabel, { color: '#1A1A2E' }]}>Earnings</Text>
+                    <Text style={[styles.walletCardAmount, { color: '#1A1A2E' }]}>
+                      {wallet?.withdrawable_balance?.toLocaleString() || '0'}
+                    </Text>
+                    <Text style={[styles.walletCardCurrency, { color: '#1A1A2E' }]}>Withdrawable</Text>
+                  </LinearGradient>
+                </View>
+                
+                <View style={styles.walletCard}>
+                  <LinearGradient
+                    colors={['#E91E63', '#C2185B']}
+                    style={styles.walletCardGradient}
+                  >
+                    <Ionicons name="heart" size={24} color="#FFFFFF" />
+                    <Text style={styles.walletCardLabel}>Charity Wallet</Text>
+                    <Text style={styles.walletCardAmount}>
+                      {wallet?.bonus_balance?.toLocaleString() || '0'}
+                    </Text>
+                    <Text style={styles.walletCardCurrency}>For Good</Text>
+                  </LinearGradient>
+                </View>
+              </View>
+              
+              {/* Wallet Action Buttons */}
+              <View style={styles.walletActions}>
+                <TouchableOpacity 
+                  style={styles.walletActionBtn}
+                  onPress={() => router.push('/(tabs)/wallet')}
+                >
+                  <Ionicons name="add-circle" size={20} color="#4CAF50" />
+                  <Text style={styles.walletActionText}>Deposit</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={styles.walletActionBtn}
+                  onPress={() => router.push('/(tabs)/wallet')}
+                >
+                  <Ionicons name="swap-horizontal" size={20} color="#2196F3" />
+                  <Text style={styles.walletActionText}>Transfer</Text>
+                </TouchableOpacity>
+                
+                <TouchableOpacity 
+                  style={[styles.walletActionBtn, styles.withdrawBtn]}
+                  onPress={() => {
+                    if ((wallet?.withdrawable_balance || 0) < 100) {
+                      Alert.alert(
+                        'Minimum Balance Required',
+                        'You need at least 100 coins in Earnings to withdraw.',
+                        [{ text: 'OK' }]
+                      );
+                    } else {
+                      setShowWithdrawModal(true);
+                    }
+                  }}
+                >
+                  <Ionicons name="cash" size={20} color="#FF9800" />
+                  <Text style={styles.walletActionText}>Withdraw</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Stats Row - Stars Only */}
             <View style={styles.statsRow}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>
-                  {wallet?.coins_balance?.toLocaleString() || '0'}
-                </Text>
-                <Text style={styles.statLabel}>Coins</Text>
-              </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>
-                  {wallet?.bonus_balance?.toLocaleString() || '0'}
-                </Text>
-                <Text style={styles.statLabel}>Bonus</Text>
-              </View>
-              <View style={styles.statDivider} />
               <View style={styles.statItem}>
                 <Text style={styles.statValue}>
                   {wallet?.stars_balance?.toLocaleString() || '0'}
                 </Text>
-                <Text style={styles.statLabel}>Stars</Text>
+                <Text style={styles.statLabel}>⭐ Stars</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>
+                  {vipStatus?.vip_level || 0}
+                </Text>
+                <Text style={styles.statLabel}>VIP Level</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>0</Text>
+                <Text style={styles.statLabel}>Achievements</Text>
               </View>
             </View>
 
