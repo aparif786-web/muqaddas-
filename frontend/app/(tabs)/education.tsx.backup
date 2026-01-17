@@ -37,8 +37,8 @@ interface Course {
   };
 }
 
-interface CharityChallenge {
-  challenge_id: string;
+interface MindGame {
+  game_id: string;
   name: string;
   description: string;
   category: string;
@@ -53,7 +53,7 @@ interface EducationProfile {
   total_coins_earned: number;
   courses_enrolled: number;
   courses_completed: number;
-  challenges_completed: number;
+  games_played: number;
   streak_days: number;
 }
 
@@ -66,24 +66,24 @@ interface LearningLevel {
 export default function EducationScreen() {
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
-  const [charityChallenges, setMindGames] = useState<CharityChallenge[]>([]);
+  const [mindGames, setMindGames] = useState<MindGame[]>([]);
   const [profile, setProfile] = useState<EducationProfile | null>(null);
   const [learningLevels, setLearningLevels] = useState<Record<string, LearningLevel>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedTab, setSelectedTab] = useState<'courses' | 'challenges'>('courses');
+  const [selectedTab, setSelectedTab] = useState<'courses' | 'games'>('courses');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  const [selectedChallenge, setSelectedGame] = useState<CharityChallenge | null>(null);
+  const [selectedGame, setSelectedGame] = useState<MindGame | null>(null);
   const [enrolling, setEnrolling] = useState(false);
   const [playing, setPlaying] = useState(false);
-  const [challengeResult, setGameResult] = useState<{ won: boolean; coins: number } | null>(null);
+  const [gameResult, setGameResult] = useState<{ won: boolean; coins: number } | null>(null);
 
   const fetchData = async () => {
     try {
       const [configRes, coursesRes, gamesRes, profileRes] = await Promise.all([
         api.get('/education/config'),
         api.get('/education/courses'),
-        api.get('/education/charity-challenges'),
+        api.get('/education/mind-games'),
         api.get('/education/profile').catch(() => ({ data: null })),
       ]);
 
@@ -126,22 +126,22 @@ export default function EducationScreen() {
     }
   };
 
-  const handleStartChallenge = async (game: MindGame) => {
+  const handlePlayGame = async (game: MindGame) => {
     setPlaying(true);
     await sultanFeedback.buttonPress(); // Click feedback
     try {
       // Simulate game play with random score
       const score = Math.floor(Math.random() * 100);
-      const response = await api.post('/education/start-charity-challenge', {
-        challenge_id: game.challenge_id,
+      const response = await api.post('/education/play-mind-game', {
+        game_id: game.game_id,
         score: score,
         time_taken: Math.floor(Math.random() * game.time_limit_seconds),
       });
       
       if (response.data.won) {
-        await sultanFeedback.challengeWon(); // Victory sound + vibration
+        await sultanFeedback.gameWon(); // Victory sound + vibration
       } else {
-        await sultanFeedback.challengeLost(); // Lose feedback
+        await sultanFeedback.gameLost(); // Lose feedback
       }
       
       setGameResult({
@@ -194,7 +194,7 @@ export default function EducationScreen() {
       case 'life skills':
         return 'heart';
       case 'mind games':
-        return 'heart-circle';
+        return 'game-controller';
       default:
         return 'school';
     }
@@ -272,7 +272,7 @@ export default function EducationScreen() {
                 </View>
                 <View style={styles.statDivider} />
                 <View style={styles.statItem}>
-                  <Text style={styles.statValue}>{profile?.challenges_completed || 0}</Text>
+                  <Text style={styles.statValue}>{profile?.games_played || 0}</Text>
                   <Text style={styles.statLabel}>Games</Text>
                 </View>
                 <View style={styles.statDivider} />
@@ -301,15 +301,15 @@ export default function EducationScreen() {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.tab, selectedTab === 'challenges' && styles.activeTab]}
-                onPress={() => setSelectedTab('challenges')}
+                style={[styles.tab, selectedTab === 'games' && styles.activeTab]}
+                onPress={() => setSelectedTab('games')}
               >
                 <Ionicons
                   name="flash"
                   size={20}
-                  color={selectedTab === 'challenges' ? '#FFD700' : '#808080'}
+                  color={selectedTab === 'games' ? '#FFD700' : '#808080'}
                 />
-                <Text style={[styles.tabText, selectedTab === 'challenges' && styles.activeTabText]}>
+                <Text style={[styles.tabText, selectedTab === 'games' && styles.activeTabText]}>
                   Gyan Yuddh
                 </Text>
               </TouchableOpacity>
@@ -391,15 +391,15 @@ export default function EducationScreen() {
             )}
 
             {/* Gyan Yuddh Tab */}
-            {selectedTab === 'challenges' && (
+            {selectedTab === 'games' && (
               <View style={styles.contentSection}>
                 <Text style={styles.sectionTitle}>⚔️ Gyan Yuddh (ज्ञान युद्ध)</Text>
                 <Text style={styles.sectionSubtitle}>Knowledge Battle - Train your brain and earn rewards!</Text>
                 
                 <View style={styles.gamesGrid}>
-                  {charityChallenges.map((game) => (
+                  {mindGames.map((game) => (
                     <TouchableOpacity
-                      key={game.challenge_id}
+                      key={game.game_id}
                       style={styles.gameCard}
                       onPress={() => setSelectedGame(game)}
                     >
@@ -408,7 +408,7 @@ export default function EducationScreen() {
                         style={styles.gameGradient}
                       >
                         <View style={styles.gameIcon}>
-                          <Ionicons name="heart-circle" size={32} color={getDifficultyColor(game.difficulty)} />
+                          <Ionicons name="game-controller" size={32} color={getDifficultyColor(game.difficulty)} />
                         </View>
                         <Text style={styles.gameName}>{game.name}</Text>
                         <Text style={styles.gameDescription} numberOfLines={2}>
@@ -522,7 +522,7 @@ export default function EducationScreen() {
       </Modal>
 
       {/* Game Modal */}
-      <Modal visible={selectedChallenge !== null} transparent animationType="slide">
+      <Modal visible={selectedGame !== null} transparent animationType="slide">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <LinearGradient colors={['#2A2A4E', '#1A1A3E']} style={styles.modalGradient}>
@@ -536,37 +536,37 @@ export default function EducationScreen() {
                 <Ionicons name="close" size={24} color="#FFFFFF" />
               </TouchableOpacity>
               
-              {selectedChallenge && !challengeResult && (
+              {selectedGame && !gameResult && (
                 <>
                   <View style={styles.gameModalHeader}>
-                    <View style={[styles.gameModalIcon, { backgroundColor: getDifficultyColor(selectedChallenge.difficulty) + '30' }]}>
-                      <Ionicons name="heart-circle" size={50} color={getDifficultyColor(selectedChallenge.difficulty)} />
+                    <View style={[styles.gameModalIcon, { backgroundColor: getDifficultyColor(selectedGame.difficulty) + '30' }]}>
+                      <Ionicons name="game-controller" size={50} color={getDifficultyColor(selectedGame.difficulty)} />
                     </View>
-                    <Text style={styles.modalTitle}>{selectedChallenge.name}</Text>
+                    <Text style={styles.modalTitle}>{selectedGame.name}</Text>
                   </View>
                   
-                  <Text style={styles.modalDescription}>{selectedChallenge.description}</Text>
+                  <Text style={styles.modalDescription}>{selectedGame.description}</Text>
                   
                   <View style={styles.gameInfo}>
                     <View style={styles.gameInfoItem}>
                       <Ionicons name="timer" size={24} color="#2196F3" />
-                      <Text style={styles.gameInfoValue}>{selectedChallenge.time_limit_seconds}s</Text>
+                      <Text style={styles.gameInfoValue}>{selectedGame.time_limit_seconds}s</Text>
                       <Text style={styles.gameInfoLabel}>Time Limit</Text>
                     </View>
                     <View style={styles.gameInfoItem}>
                       <Ionicons name="trophy" size={24} color="#FFD700" />
-                      <Text style={styles.gameInfoValue}>{selectedChallenge.coins_reward}</Text>
+                      <Text style={styles.gameInfoValue}>{selectedGame.coins_reward}</Text>
                       <Text style={styles.gameInfoLabel}>Reward</Text>
                     </View>
                   </View>
                   
                   <TouchableOpacity
                     style={styles.playButton}
-                    onPress={() => handleStartChallenge(selectedChallenge)}
+                    onPress={() => handlePlayGame(selectedGame)}
                     disabled={playing}
                   >
                     <LinearGradient
-                      colors={[getDifficultyColor(selectedChallenge.difficulty), getDifficultyColor(selectedChallenge.difficulty) + 'CC']}
+                      colors={[getDifficultyColor(selectedGame.difficulty), getDifficultyColor(selectedGame.difficulty) + 'CC']}
                       style={styles.playGradient}
                     >
                       {playing ? (
@@ -582,26 +582,26 @@ export default function EducationScreen() {
                 </>
               )}
               
-              {challengeResult && (
+              {gameResult && (
                 <View style={styles.resultContainer}>
-                  <View style={[styles.resultIcon, { backgroundColor: challengeResult.won ? '#4CAF5030' : '#F4433630' }]}>
+                  <View style={[styles.resultIcon, { backgroundColor: gameResult.won ? '#4CAF5030' : '#F4433630' }]}>
                     <Ionicons
-                      name={challengeResult.won ? 'trophy' : 'sad'}
+                      name={gameResult.won ? 'trophy' : 'sad'}
                       size={60}
-                      color={challengeResult.won ? '#4CAF50' : '#F44336'}
+                      color={gameResult.won ? '#4CAF50' : '#F44336'}
                     />
                   </View>
                   <Text style={styles.resultTitle}>
-                    {challengeResult.won ? '🎉 Congratulations!' : '😔 Better Luck Next Time!'}
+                    {gameResult.won ? '🎉 Congratulations!' : '😔 Better Luck Next Time!'}
                   </Text>
                   <Text style={styles.resultCoins}>
-                    {challengeResult.won ? `+${challengeResult.coins} Coins Earned!` : 'No coins earned'}
+                    {gameResult.won ? `+${gameResult.coins} Coins Earned!` : 'No coins earned'}
                   </Text>
                   <TouchableOpacity
                     style={styles.playAgainButton}
                     onPress={() => {
                       setGameResult(null);
-                      if (selectedChallenge) handleStartChallenge(selectedChallenge);
+                      if (selectedGame) handlePlayGame(selectedGame);
                     }}
                   >
                     <Text style={styles.playAgainText}>Play Again</Text>
