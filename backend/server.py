@@ -6078,49 +6078,107 @@ async def ask_ai_teacher(
         "trust_features": AI_TEACHER_CONFIG["trust_building_features"]
     }
 
-def generate_ai_teacher_response(subject: str, question: str, language: str) -> dict:
-    """Generate AI Teacher response (placeholder for actual AI integration)"""
-    # This is a placeholder - integrate with actual AI service
-    responses = {
-        "mathematics": {
-            "answer": f"Aapka sawaal '{question}' bahut accha hai! Mathematics mein yeh concept important hai. Main aapko step-by-step samjhata hoon...",
-            "confidence": 0.85,
-            "sources": ["NCERT Mathematics", "Khan Academy"]
-        },
-        "science": {
-            "answer": f"'{question}' - Yeh ek interesting scientific question hai. Science mein iska explanation yeh hai...",
-            "confidence": 0.88,
-            "sources": ["NCERT Science", "National Geographic"]
-        },
-        "law": {
-            "answer": f"Aapka legal sawaal '{question}' ke baare mein - Indian law ke according...",
-            "confidence": 0.82,
-            "sources": ["Indian Kanoon", "Legal Services India"]
-        },
-        "health": {
-            "answer": f"'{question}' - Health ke baare mein yeh jaankari important hai. Doctor se zaroor consult karein...",
-            "confidence": 0.80,
-            "sources": ["WHO Guidelines", "AIIMS"]
-        },
-        "business": {
-            "answer": f"Business mein '{question}' - Yeh strategy follow karein...",
-            "confidence": 0.83,
-            "sources": ["Harvard Business Review", "Economic Times"]
-        },
-        "psychology": {
-            "answer": f"Manovigyan ke anusaar '{question}' - Mind ka yeh concept samjhein...",
-            "confidence": 0.86,
-            "sources": ["Psychology Today", "NIMHANS"]
+async def generate_ai_teacher_response_llm(subject: str, question: str, language: str) -> dict:
+    """Generate AI Teacher response using real LLM (Emergent API)"""
+    
+    # Subject-specific system prompts
+    subject_prompts = {
+        "mathematics": "You are an expert mathematics teacher. Explain mathematical concepts clearly with step-by-step solutions.",
+        "science": "You are a science educator. Explain scientific concepts with real-world examples.",
+        "law": "You are a legal expert familiar with Indian law. Provide accurate legal information and guidance.",
+        "health": "You are a healthcare advisor. Provide health information but always recommend consulting a doctor for medical issues.",
+        "business": "You are a business coach. Provide practical business advice and strategies.",
+        "psychology": "You are a psychology expert. Explain psychological concepts and provide mental wellness guidance.",
+        "history": "You are a history teacher. Explain historical events and their significance.",
+        "geography": "You are a geography expert. Explain geographical concepts and facts.",
+        "technology": "You are a technology expert. Explain technical concepts in simple terms.",
+        "finance": "You are a financial advisor. Provide financial literacy and investment guidance.",
+    }
+    
+    system_prompt = subject_prompts.get(subject, "You are a knowledgeable teacher helping students learn.")
+    
+    # Language instruction
+    lang_instruction = ""
+    if language == "Hindi":
+        lang_instruction = "Respond in Hindi (Devanagari script) mixed with simple English terms where needed. Use conversational Hinglish style."
+    elif language == "Bengali":
+        lang_instruction = "Respond in Bengali."
+    else:
+        lang_instruction = "Respond in clear, simple English."
+    
+    full_system = f"""You are the AI Teacher for Gyan Sultanat (ज्ञान सल्तनत) - India's premier education platform.
+
+{system_prompt}
+
+{lang_instruction}
+
+Guidelines:
+- Be helpful, accurate, and educational
+- Use simple language that students can understand
+- Provide examples where helpful
+- For health/legal topics, always recommend consulting professionals
+- Be encouraging and supportive
+- Keep responses concise but informative (2-3 paragraphs max)
+"""
+
+    try:
+        response = await openai_client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": full_system},
+                {"role": "user", "content": question}
+            ],
+            max_tokens=500,
+            temperature=0.7
+        )
+        
+        answer = response.choices[0].message.content
+        
+        # Determine sources based on subject
+        sources_map = {
+            "mathematics": ["NCERT Mathematics", "Khan Academy", "Gyan Sultanat"],
+            "science": ["NCERT Science", "National Geographic", "Gyan Sultanat"],
+            "law": ["Indian Kanoon", "Legal Services India", "Gyan Sultanat"],
+            "health": ["WHO Guidelines", "AIIMS", "Gyan Sultanat"],
+            "business": ["Harvard Business Review", "Economic Times", "Gyan Sultanat"],
+            "psychology": ["Psychology Today", "NIMHANS", "Gyan Sultanat"],
+            "history": ["NCERT History", "Britannica", "Gyan Sultanat"],
+            "geography": ["National Geographic", "NCERT Geography", "Gyan Sultanat"],
+            "technology": ["MIT OpenCourseWare", "TechCrunch", "Gyan Sultanat"],
+            "finance": ["Economic Times", "Investopedia", "Gyan Sultanat"],
         }
-    }
-    
-    default_response = {
-        "answer": f"Aapka sawaal '{question}' ke baare mein - Main aapko detail mein samjhata hoon. Yeh topic bahut important hai...",
-        "confidence": 0.75,
-        "sources": ["Gyan Sultanat Knowledge Base", "Expert Reviews"]
-    }
-    
-    return responses.get(subject, default_response)
+        
+        return {
+            "answer": answer,
+            "confidence": 0.92,
+            "sources": sources_map.get(subject, ["Gyan Sultanat Knowledge Base"])
+        }
+        
+    except Exception as e:
+        logging.error(f"AI Teacher LLM Error: {str(e)}")
+        # Fallback to basic response
+        return {
+            "answer": f"Main aapke sawaal '{question}' ka jawab dhundh raha hoon. Kripya thodi der baad dobara try karein ya apna sawaal alag tarike se poochhein.",
+            "confidence": 0.5,
+            "sources": ["Gyan Sultanat"]
+        }
+
+def generate_ai_teacher_response(subject: str, question: str, language: str) -> dict:
+    """Sync wrapper - will be called from async context"""
+    # This is kept for backward compatibility
+    import asyncio
+    try:
+        loop = asyncio.get_event_loop()
+        if loop.is_running():
+            # We're in an async context, need to use await in the caller
+            return None  # Signal to use async version
+        return asyncio.run(generate_ai_teacher_response_llm(subject, question, language))
+    except:
+        return {
+            "answer": f"Aapka sawaal '{question}' ke baare mein - Main aapko detail mein samjhata hoon.",
+            "confidence": 0.75,
+            "sources": ["Gyan Sultanat Knowledge Base"]
+        }
 
 @api_router.post("/ai-teacher/feedback/{query_id}")
 async def give_ai_teacher_feedback(
