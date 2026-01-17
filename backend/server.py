@@ -135,6 +135,88 @@ class Notification(BaseModel):
     action_url: Optional[str] = None
     created_at: datetime
 
+# ==================== UNIVERSAL PARTNER SYSTEM MODELS ====================
+
+class PartnerType(str, Enum):
+    NGO = "ngo"
+    TRUST = "trust"
+    EDUCATION = "education"
+    LEGAL = "legal"
+    HEALTH = "health"
+    TECHNOLOGY = "technology"
+    BUSINESS = "business"
+
+class PartnerStatus(str, Enum):
+    PENDING = "pending"
+    VERIFIED = "verified"
+    REJECTED = "rejected"
+    SUSPENDED = "suspended"
+
+class UniversalPartner(BaseModel):
+    partner_id: str
+    organization_name: str
+    partner_type: PartnerType
+    description: str
+    logo_url: Optional[str] = None
+    website: Optional[str] = None
+    email: str
+    phone: Optional[str] = None
+    documents: List[str] = []  # Legal document URLs
+    status: PartnerStatus = PartnerStatus.PENDING
+    verified_badge: bool = False
+    channel_room_id: Optional[str] = None  # Dedicated 3D room
+    profit_share_percent: float = 10.0  # Default 10%
+    total_students: int = 0
+    total_courses: int = 0
+    total_earnings: float = 0.0
+    rating: float = 0.0
+    created_at: datetime
+    verified_at: Optional[datetime] = None
+
+class PartnerCourse(BaseModel):
+    course_id: str
+    partner_id: str
+    title: str
+    description: str
+    category: str  # "legal", "business", "gyan"
+    difficulty: str  # "beginner", "intermediate", "advanced"
+    duration_hours: int
+    knowledge_points: int  # Points earned on completion
+    coin_reward: float = 0.0  # Direct coin reward
+    certificate_enabled: bool = True
+    is_active: bool = True
+    created_at: datetime
+
+class StudentProgress(BaseModel):
+    progress_id: str
+    user_id: str
+    partner_id: str
+    course_id: str
+    status: str  # "enrolled", "in_progress", "completed", "certified"
+    knowledge_points_earned: int = 0
+    completion_percent: float = 0.0
+    started_at: datetime
+    completed_at: Optional[datetime] = None
+    certificate_id: Optional[str] = None
+
+class UserEducationLevel(str, Enum):
+    STUDENT = "student"
+    LEARNER = "learner"
+    ACHIEVER = "achiever"
+    EXPERT = "expert"
+    MASTER = "master"
+    GURU = "guru"
+
+# Education Level Requirements (Gamified Journey)
+EDUCATION_LEVELS = {
+    UserEducationLevel.STUDENT: {"min_points": 0, "badge": "📚", "title": "Student"},
+    UserEducationLevel.LEARNER: {"min_points": 100, "badge": "🎓", "title": "Learner"},
+    UserEducationLevel.ACHIEVER: {"min_points": 500, "badge": "🏆", "title": "Achiever"},
+    UserEducationLevel.EXPERT: {"min_points": 2000, "badge": "⭐", "title": "Expert"},
+    UserEducationLevel.MASTER: {"min_points": 5000, "badge": "👑", "title": "Master"},
+    UserEducationLevel.GURU: {"min_points": 10000, "badge": "🔱", "title": "Guru"},
+}
+
 # ==================== CROWN SYSTEM MODELS ====================
 
 class CrownType(str, Enum):
