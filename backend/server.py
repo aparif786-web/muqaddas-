@@ -217,6 +217,96 @@ EDUCATION_LEVELS = {
     UserEducationLevel.GURU: {"min_points": 10000, "badge": "🔱", "title": "Guru"},
 }
 
+# ==================== TALENT REGISTRATION SYSTEM ====================
+
+class TalentType(str, Enum):
+    TEACHER = "teacher"  # শিক্ষক
+    DOCTOR = "doctor"    # ডাক্তার
+    LAWYER = "lawyer"    # আইনজীবী
+    ENGINEER = "engineer"
+    ARTIST = "artist"
+    MUSICIAN = "musician"
+    INFLUENCER = "influencer"
+    BUSINESS_COACH = "business_coach"
+    LIFE_COACH = "life_coach"
+    OTHER = "other"
+
+class TalentStatus(str, Enum):
+    PENDING = "pending"
+    ACTIVE = "active"
+    VERIFIED = "verified"
+    SUSPENDED = "suspended"
+
+class TalentProfile(BaseModel):
+    talent_id: str
+    user_id: str
+    talent_type: TalentType
+    profession_title: str
+    bio: str
+    qualifications: List[str] = []
+    experience_years: int = 0
+    languages: List[str] = ["Hindi", "English"]
+    specializations: List[str] = []
+    hourly_rate: float = 0.0  # For consultations
+    status: TalentStatus = TalentStatus.PENDING
+    is_verified: bool = False
+    registration_fee_paid: bool = False
+    registration_fee_amount: float = 1.0  # ₹1 initial fee
+    ai_services_enabled: bool = False
+    ai_subscription_active: bool = False
+    total_sessions: int = 0
+    total_earnings: float = 0.0
+    rating: float = 0.0
+    reviews_count: int = 0
+    created_at: datetime
+    verified_at: Optional[datetime] = None
+
+class AIServiceSubscription(BaseModel):
+    subscription_id: str
+    talent_id: str
+    plan_type: str  # "basic", "pro", "enterprise"
+    price_per_month: float
+    features: List[str]
+    is_active: bool = True
+    started_at: datetime
+    expires_at: datetime
+
+class TalentAdvertisement(BaseModel):
+    ad_id: str
+    talent_id: str
+    ad_title: str
+    ad_description: str
+    budget: float
+    spent: float = 0.0
+    impressions: int = 0
+    clicks: int = 0
+    conversions: int = 0
+    is_active: bool = True
+    created_at: datetime
+    expires_at: datetime
+
+# Registration Fee Config
+TALENT_REGISTRATION_FEE = 1.0  # ₹1 initial fee
+
+# AI Service Plans
+AI_SERVICE_PLANS = {
+    "basic": {
+        "name": "Basic AI",
+        "price": 99,  # ₹99/month
+        "features": ["AI Content Suggestions", "Basic Analytics", "Email Support"]
+    },
+    "pro": {
+        "name": "Pro AI",
+        "price": 299,  # ₹299/month
+        "features": ["AI Content Creation", "Advanced Analytics", "Priority Support", "AI Chat Assistant"]
+    },
+    "enterprise": {
+        "name": "Enterprise AI",
+        "price": 999,  # ₹999/month
+        "features": ["Full AI Suite", "Custom AI Training", "24/7 Support", "API Access", "White Label"]
+    }
+}
+
 # ==================== CROWN SYSTEM MODELS ====================
 
 class CrownType(str, Enum):
