@@ -8593,6 +8593,199 @@ async def test_sultan_payment():
         "next_step": "অন্য ফোন থেকে অ্যাপে পেমেন্ট করে দেখুন"
     }
 
+# ==================== MUQADDAS NETWORK PROTOCOLS API ====================
+
+@api_router.get("/muqaddas/protocols")
+async def get_muqaddas_protocols():
+    """
+    Get current Muqaddas Network Protocols
+    FREE ENTRY + ZERO PROFIT + WITHDRAWAL ENABLED
+    """
+    return {
+        "success": True,
+        "protocol_name": "MUQADDAS NETWORK ACCESS PROTOCOL V2.0",
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "protocols": {
+            "free_entry": {
+                "status": MUQADDAS_PROTOCOLS["free_entry"],
+                "description": "सभी यूज़र्स को FREE DIRECT ENTRY",
+                "entry_fee": "₹0.00 (पूर्णतः मुफ्त)",
+                "message": "कोई भी एंट्री फीस नहीं!"
+            },
+            "day1_zero_profit": {
+                "status": MUQADDAS_PROTOCOLS["day1_zero_profit"],
+                "description": "Day-1 Zero Profit Protocol सक्रिय",
+                "message": "पहले दिन से कोई प्रॉफिट नहीं - सिर्फ सेवा!"
+            },
+            "withdrawal": {
+                "enabled": MUQADDAS_PROTOCOLS["withdrawal_enabled"],
+                "description": "यूज़र्स अपना बैलेंस कभी भी निकाल सकते हैं",
+                "min_amount": "₹10",
+                "message": "पूर्ण विड्रॉल सुविधा उपलब्ध!"
+            },
+            "charity": {
+                "rate": f"{MUQADDAS_PROTOCOLS['charity_rate'] * 100}%",
+                "description": "हर लेनदेन का 2% चैरिटी में जाता है",
+                "gift_income_charity": f"{MUQADDAS_PROTOCOLS['gift_income_charity'] * 100}%",
+                "status": "✅ ALWAYS ACTIVE",
+                "message": "2% Gift Income और Charity Lock सिस्टम सक्रिय!"
+            }
+        },
+        "owner_message": "मुक़द्दस नेटवर्क का मिशन: शिक्षा से आय, दान से सेवा!",
+        "verification": {
+            "seal": SULTAN_MASTER_SIGNATURE["verification_key"],
+            "status": "✅ VERIFIED & SECURED"
+        }
+    }
+
+@api_router.post("/user/free-register")
+async def free_user_registration(name: str, email: str, phone: str = None):
+    """
+    FREE Registration - No entry fee required
+    Direct entry to Muqaddas Network
+    """
+    now = datetime.now(timezone.utc)
+    user_id = str(uuid.uuid4())
+    
+    # Check if user already exists
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        return {
+            "success": False,
+            "message": "यह ईमेल पहले से रजिस्टर्ड है!",
+            "existing_user_id": existing.get("user_id")
+        }
+    
+    # Create new user with FREE entry
+    new_user = {
+        "user_id": user_id,
+        "name": name,
+        "email": email,
+        "phone": phone,
+        "created_at": now,
+        "coin_balance": 10,  # Welcome bonus
+        "diamond_balance": 0,
+        "rupee_balance": 0,
+        "vip_status": False,
+        "registration_fee_paid": 0.0,  # FREE ENTRY
+        "free_entry": True,
+        "day1_zero_profit_applied": True,
+        "withdrawal_enabled": True
+    }
+    
+    await db.users.insert_one(new_user)
+    
+    return {
+        "success": True,
+        "message": "🎉 स्वागत है! आप Muqaddas Network में FREE में शामिल हो गए!",
+        "user": {
+            "user_id": user_id,
+            "name": name,
+            "email": email,
+            "welcome_bonus": "10 Coins",
+            "entry_fee": "₹0.00 (FREE)"
+        },
+        "protocols_applied": {
+            "free_entry": True,
+            "day1_zero_profit": True,
+            "withdrawal_enabled": True,
+            "charity_active": True
+        },
+        "next_steps": [
+            "AI Teacher से कुछ भी पूछें",
+            "Gyan Yuddh खेलें और Coins जीतें",
+            "अपना बैलेंस कभी भी निकालें"
+        ]
+    }
+
+@api_router.post("/wallet/withdraw")
+async def withdraw_balance(user_id: str, amount: float, upi_id: str):
+    """
+    Withdraw balance to user's UPI
+    FREE withdrawals enabled for all users
+    """
+    user = await db.users.find_one({"user_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    rupee_balance = user.get("rupee_balance", 0)
+    
+    if amount < 10:
+        return {
+            "success": False,
+            "message": "न्यूनतम विड्रॉल ₹10 है",
+            "min_amount": 10
+        }
+    
+    if amount > rupee_balance:
+        return {
+            "success": False,
+            "message": "अपर्याप्त बैलेंस",
+            "available_balance": f"₹{rupee_balance:,.2f}",
+            "requested": f"₹{amount:,.2f}"
+        }
+    
+    now = datetime.now(timezone.utc)
+    withdrawal_id = f"WD-{uuid.uuid4().hex[:8].upper()}"
+    
+    # Calculate charity deduction (2%)
+    charity = amount * CHARITY_RATE
+    net_amount = amount - charity
+    
+    # Create withdrawal record
+    withdrawal = {
+        "withdrawal_id": withdrawal_id,
+        "user_id": user_id,
+        "amount": amount,
+        "charity_deducted": charity,
+        "net_amount": net_amount,
+        "upi_id": upi_id,
+        "status": "processing",
+        "created_at": now
+    }
+    
+    await db.withdrawals.insert_one(withdrawal)
+    
+    # Update user balance
+    await db.users.update_one(
+        {"user_id": user_id},
+        {"$inc": {"rupee_balance": -amount}}
+    )
+    
+    return {
+        "success": True,
+        "message": "✅ विड्रॉल रिक्वेस्ट सफल!",
+        "withdrawal": {
+            "id": withdrawal_id,
+            "amount_requested": f"₹{amount:,.2f}",
+            "charity_2_percent": f"₹{charity:,.2f}",
+            "net_to_receive": f"₹{net_amount:,.2f}",
+            "upi_id": upi_id,
+            "status": "Processing"
+        },
+        "note": "24 घंटे के अंदर आपके UPI में पैसे आ जाएंगे",
+        "charity_message": f"₹{charity:,.2f} चैरिटी में गया - धन्यवाद! 💚"
+    }
+
+@api_router.get("/muqaddas/day1-zero-profit-status")
+async def get_day1_zero_profit_status():
+    """
+    Check Day-1 Zero Profit Protocol Status
+    """
+    return {
+        "protocol": "DAY-1 ZERO PROFIT",
+        "status": "✅ ACTIVE",
+        "description": "पहले दिन से कोई प्रॉफिट नहीं लिया जाएगा",
+        "rules": [
+            "यूज़र का पूरा बैलेंस उसका है",
+            "2% चैरिटी अनिवार्य",
+            "कोई छिपी फीस नहीं",
+            "FREE Entry for all"
+        ],
+        "owner": SULTAN_IDENTITY["name"],
+        "seal": SULTAN_MASTER_SIGNATURE["verification_key"]
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
