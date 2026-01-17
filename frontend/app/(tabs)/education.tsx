@@ -390,11 +390,11 @@ export default function EducationScreen() {
               </View>
             )}
 
-            {/* Mind Games Tab */}
+            {/* Gyan Yuddh Tab */}
             {selectedTab === 'games' && (
               <View style={styles.contentSection}>
-                <Text style={styles.sectionTitle}>🧠 Mind Games</Text>
-                <Text style={styles.sectionSubtitle}>Train your brain and earn rewards!</Text>
+                <Text style={styles.sectionTitle}>⚔️ Gyan Yuddh (ज्ञान युद्ध)</Text>
+                <Text style={styles.sectionSubtitle}>Knowledge Battle - Train your brain and earn rewards!</Text>
                 
                 <View style={styles.gamesGrid}>
                   {mindGames.map((game) => (
