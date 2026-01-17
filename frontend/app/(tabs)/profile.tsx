@@ -38,13 +38,6 @@ export default function ProfileScreen() {
   const [vipStatus, setVipStatus] = useState<VIPStatus | null>(null);
   const [wallet, setWallet] = useState<Wallet | null>(null);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
-  const [withdrawAmount, setWithdrawAmount] = useState('');
-
-export default function ProfileScreen() {
-  const { user, logout } = useAuth();
-  const router = useRouter();
-  const [vipStatus, setVipStatus] = useState<VIPStatus | null>(null);
-  const [wallet, setWallet] = useState<Wallet | null>(null);
 
   useEffect(() => {
     fetchData();
@@ -80,9 +73,8 @@ export default function ProfileScreen() {
 
   const menuItems = [
     {
-      icon: 'wallet',
-      label: 'My Wallet',
-      sublabel: `${wallet?.coins_balance?.toLocaleString() || 0} coins`,
+      icon: 'receipt',
+      label: 'Transaction History',
       onPress: () => router.push('/(tabs)/wallet'),
     },
     {
@@ -90,11 +82,6 @@ export default function ProfileScreen() {
       label: 'VIP Status',
       sublabel: vipStatus?.current_level_data?.name || 'Basic',
       onPress: () => router.push('/(tabs)/vip'),
-    },
-    {
-      icon: 'receipt',
-      label: 'Transaction History',
-      onPress: () => router.push('/(tabs)/wallet'),
     },
     {
       icon: 'notifications',
@@ -473,6 +460,80 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#FFD700',
   },
+  // Wallet Section Styles
+  walletSection: {
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 215, 0, 0.2)',
+  },
+  walletHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+    gap: 8,
+  },
+  walletTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
+  tripleWallet: {
+    gap: 12,
+  },
+  walletCard: {
+    borderRadius: 12,
+    overflow: 'hidden',
+  },
+  walletCardGradient: {
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  walletCardLabel: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.8)',
+    flex: 1,
+    marginLeft: 12,
+  },
+  walletCardAmount: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  walletCardCurrency: {
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.6)',
+    marginLeft: 4,
+  },
+  walletActions: {
+    flexDirection: 'row',
+    marginTop: 16,
+    gap: 8,
+  },
+  walletActionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 10,
+    padding: 12,
+    gap: 6,
+  },
+  withdrawBtn: {
+    backgroundColor: 'rgba(255, 152, 0, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 152, 0, 0.3)',
+  },
+  walletActionText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#FFFFFF',
+  },
   statsRow: {
     flexDirection: 'row',
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
@@ -552,80 +613,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 12,
     color: '#808080',
-  },
-  // Wallet Section Styles
-  walletSection: {
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 20,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 215, 0, 0.2)',
-  },
-  walletHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 16,
-    gap: 8,
-  },
-  walletTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#FFFFFF',
-  },
-  tripleWallet: {
-    gap: 12,
-  },
-  walletCard: {
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  walletCardGradient: {
-    padding: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  walletCardLabel: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.8)',
-    flex: 1,
-    marginLeft: 12,
-  },
-  walletCardAmount: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-  },
-  walletCardCurrency: {
-    fontSize: 10,
-    color: 'rgba(255,255,255,0.6)',
-    marginLeft: 4,
-  },
-  walletActions: {
-    flexDirection: 'row',
-    marginTop: 16,
-    gap: 8,
-  },
-  walletActionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 10,
-    padding: 12,
-    gap: 6,
-  },
-  withdrawBtn: {
-    backgroundColor: 'rgba(255, 152, 0, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 152, 0, 0.3)',
-  },
-  walletActionText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#FFFFFF',
   },
   // Modal Styles
   modalOverlay: {
