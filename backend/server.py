@@ -5531,6 +5531,386 @@ async def get_my_education_progress(user: User = Depends(get_current_user)):
         "can_become_agent": total_points >= 2000  # Qualified Agent eligibility
     }
 
+# ==================== TALENT REGISTRATION APIs ====================
+
+class TalentRegistrationRequest(BaseModel):
+    talent_type: str  # teacher, doctor, lawyer, etc.
+    profession_title: str
+    bio: str
+    qualifications: List[str] = []
+    experience_years: int = 0
+    languages: List[str] = ["Hindi", "English"]
+    specializations: List[str] = []
+    hourly_rate: float = 0.0
+
+@api_router.get("/talents/types")
+async def get_talent_types():
+    """Get all available talent types"""
+    return {
+        "talent_types": [
+            {"type": "teacher", "name": "শিক্ষক (Teacher)", "icon": "📚"},
+            {"type": "doctor", "name": "ডাক্তার (Doctor)", "icon": "🏥"},
+            {"type": "lawyer", "name": "আইনজীবী (Lawyer)", "icon": "⚖️"},
+            {"type": "engineer", "name": "Engineer", "icon": "🔧"},
+            {"type": "artist", "name": "Artist", "icon": "🎨"},
+            {"type": "musician", "name": "Musician", "icon": "🎵"},
+            {"type": "influencer", "name": "Influencer", "icon": "📱"},
+            {"type": "business_coach", "name": "Business Coach", "icon": "💼"},
+            {"type": "life_coach", "name": "Life Coach", "icon": "🌟"},
+            {"type": "other", "name": "Other Professional", "icon": "👤"}
+        ],
+        "registration_fee": TALENT_REGISTRATION_FEE,
+        "message": "Register with just ₹1 and start earning!"
+    }
+
+@api_router.post("/talents/register")
+async def register_as_talent(
+    request: TalentRegistrationRequest,
+    user: User = Depends(get_current_user)
+):
+    """Register as a talent (Teacher, Doctor, Lawyer, etc.) - ₹1 fee"""
+    user_id = user.user_id
+    
+    # Check if already registered
+    existing = await db.talents.find_one({"user_id": user_id})
+    if existing:
+        return {
+            "success": False,
+            "message": "Already registered as a talent",
+            "talent_id": existing["talent_id"],
+            "status": existing["status"]
+        }
+    
+    talent_id = str(uuid.uuid4())
+    now = datetime.now(timezone.utc)
+    
+    # Create talent profile (fee payment required separately)
+    await db.talents.insert_one({
+        "talent_id": talent_id,
+        "user_id": user_id,
+        "talent_type": request.talent_type,
+        "profession_title": request.profession_title,
+        "bio": request.bio,
+        "qualifications": request.qualifications,
+        "experience_years": request.experience_years,
+        "languages": request.languages,
+        "specializations": request.specializations,
+        "hourly_rate": request.hourly_rate,
+        "status": TalentStatus.PENDING.value,
+        "is_verified": False,
+        "registration_fee_paid": False,
+        "registration_fee_amount": TALENT_REGISTRATION_FEE,
+        "ai_services_enabled": False,
+        "ai_subscription_active": False,
+        "total_sessions": 0,
+        "total_earnings": 0.0,
+        "rating": 0.0,
+        "reviews_count": 0,
+        "created_at": now,
+        "verified_at": None
+    })
+    
+    return {
+        "success": True,
+        "message": f"Registration initiated! Please pay ₹{TALENT_REGISTRATION_FEE} to activate your profile.",
+        "talent_id": talent_id,
+        "registration_fee": TALENT_REGISTRATION_FEE,
+        "payment_required": True
+    }
+
+@api_router.post("/talents/{talent_id}/pay-registration")
+async def pay_registration_fee(talent_id: str, user: User = Depends(get_current_user)):
+    """Pay registration fee (₹1) to activate talent profile"""
+    user_id = user.user_id
+    
+    talent = await db.talents.find_one({"talent_id": talent_id, "user_id": user_id})
+    if not talent:
+        raise HTTPException(status_code=404, detail="Talent profile not found")
+    
+    if talent["registration_fee_paid"]:
+        return {
+            "success": False,
+            "message": "Registration fee already paid",
+            "status": talent["status"]
+        }
+    
+    # Deduct from wallet (₹1 = 1 coin)
+    wallet = await db.wallets.find_one({"user_id": user_id})
+    if not wallet or wallet.get("coins_balance", 0) < TALENT_REGISTRATION_FEE:
+        raise HTTPException(
+            status_code=400, 
+            detail=f"Insufficient balance. Need ₹{TALENT_REGISTRATION_FEE} (1 coin)"
+        )
+    
+    # Process payment
+    await db.wallets.update_one(
+        {"user_id": user_id},
+        {"$inc": {"coins_balance": -TALENT_REGISTRATION_FEE}}
+    )
+    
+    # Activate talent profile
+    now = datetime.now(timezone.utc)
+    await db.talents.update_one(
+        {"talent_id": talent_id},
+        {
+            "$set": {
+                "registration_fee_paid": True,
+                "status": TalentStatus.ACTIVE.value,
+                "verified_at": now
+            }
+        }
+    )
+    
+    # Create transaction record
+    await db.transactions.insert_one({
+        "transaction_id": str(uuid.uuid4()),
+        "user_id": user_id,
+        "type": "talent_registration",
+        "amount": -TALENT_REGISTRATION_FEE,
+        "description": f"Talent registration fee - {talent['profession_title']}",
+        "created_at": now
+    })
+    
+    return {
+        "success": True,
+        "message": "Registration fee paid! Your talent profile is now active.",
+        "talent_id": talent_id,
+        "status": "active"
+    }
+
+@api_router.get("/talents/my-profile")
+async def get_my_talent_profile(user: User = Depends(get_current_user)):
+    """Get current user's talent profile"""
+    user_id = user.user_id
+    
+    talent = await db.talents.find_one({"user_id": user_id})
+    if not talent:
+        return {
+            "is_talent": False,
+            "message": "Not registered as a talent. Register now with just ₹1!"
+        }
+    
+    return {
+        "is_talent": True,
+        "profile": {
+            "talent_id": talent["talent_id"],
+            "talent_type": talent["talent_type"],
+            "profession_title": talent["profession_title"],
+            "bio": talent["bio"],
+            "qualifications": talent["qualifications"],
+            "experience_years": talent["experience_years"],
+            "languages": talent["languages"],
+            "specializations": talent["specializations"],
+            "hourly_rate": talent["hourly_rate"],
+            "status": talent["status"],
+            "is_verified": talent["is_verified"],
+            "registration_fee_paid": talent["registration_fee_paid"],
+            "ai_services_enabled": talent["ai_services_enabled"],
+            "total_sessions": talent["total_sessions"],
+            "total_earnings": talent["total_earnings"],
+            "rating": talent["rating"],
+            "reviews_count": talent["reviews_count"]
+        }
+    }
+
+@api_router.get("/talents/browse")
+async def browse_talents(
+    talent_type: Optional[str] = None,
+    verified_only: bool = False
+):
+    """Browse all active talents"""
+    query = {"status": {"$in": [TalentStatus.ACTIVE.value, TalentStatus.VERIFIED.value]}}
+    
+    if talent_type:
+        query["talent_type"] = talent_type
+    if verified_only:
+        query["is_verified"] = True
+    
+    talents = await db.talents.find(query).sort("rating", -1).to_list(100)
+    
+    result = []
+    for t in talents:
+        user = await db.users.find_one({"user_id": t["user_id"]})
+        result.append({
+            "talent_id": t["talent_id"],
+            "user_name": user["name"] if user else "Unknown",
+            "user_picture": user.get("picture") if user else None,
+            "talent_type": t["talent_type"],
+            "profession_title": t["profession_title"],
+            "bio": t["bio"][:100] + "..." if len(t["bio"]) > 100 else t["bio"],
+            "experience_years": t["experience_years"],
+            "hourly_rate": t["hourly_rate"],
+            "is_verified": t["is_verified"],
+            "rating": t["rating"],
+            "reviews_count": t["reviews_count"],
+            "total_sessions": t["total_sessions"]
+        })
+    
+    return {
+        "talents": result,
+        "total": len(result)
+    }
+
+# ==================== AI SERVICES APIs ====================
+
+@api_router.get("/ai-services/plans")
+async def get_ai_service_plans():
+    """Get available AI service plans"""
+    return {
+        "plans": [
+            {
+                "plan_type": plan_type,
+                "name": data["name"],
+                "price_per_month": data["price"],
+                "features": data["features"]
+            }
+            for plan_type, data in AI_SERVICE_PLANS.items()
+        ],
+        "message": "Enhance your services with AI assistance!"
+    }
+
+@api_router.post("/ai-services/subscribe/{plan_type}")
+async def subscribe_to_ai_service(plan_type: str, user: User = Depends(get_current_user)):
+    """Subscribe to AI service plan"""
+    user_id = user.user_id
+    
+    if plan_type not in AI_SERVICE_PLANS:
+        raise HTTPException(status_code=400, detail="Invalid plan type")
+    
+    # Check if user is a talent
+    talent = await db.talents.find_one({"user_id": user_id, "registration_fee_paid": True})
+    if not talent:
+        raise HTTPException(status_code=400, detail="Must be a registered talent to subscribe")
+    
+    plan = AI_SERVICE_PLANS[plan_type]
+    
+    # Check wallet balance
+    wallet = await db.wallets.find_one({"user_id": user_id})
+    if not wallet or wallet.get("coins_balance", 0) < plan["price"]:
+        raise HTTPException(status_code=400, detail=f"Insufficient balance. Need ₹{plan['price']}")
+    
+    # Deduct payment
+    await db.wallets.update_one(
+        {"user_id": user_id},
+        {"$inc": {"coins_balance": -plan["price"]}}
+    )
+    
+    # Create subscription
+    now = datetime.now(timezone.utc)
+    subscription_id = str(uuid.uuid4())
+    expires_at = now + timedelta(days=30)
+    
+    await db.ai_subscriptions.insert_one({
+        "subscription_id": subscription_id,
+        "talent_id": talent["talent_id"],
+        "user_id": user_id,
+        "plan_type": plan_type,
+        "price_per_month": plan["price"],
+        "features": plan["features"],
+        "is_active": True,
+        "started_at": now,
+        "expires_at": expires_at
+    })
+    
+    # Update talent profile
+    await db.talents.update_one(
+        {"talent_id": talent["talent_id"]},
+        {
+            "$set": {
+                "ai_services_enabled": True,
+                "ai_subscription_active": True
+            }
+        }
+    )
+    
+    return {
+        "success": True,
+        "message": f"Subscribed to {plan['name']} plan!",
+        "subscription_id": subscription_id,
+        "plan": plan_type,
+        "features": plan["features"],
+        "expires_at": expires_at.isoformat()
+    }
+
+# ==================== TALENT ADVERTISING APIs ====================
+
+class CreateAdRequest(BaseModel):
+    ad_title: str
+    ad_description: str
+    budget: float
+    duration_days: int = 7
+
+@api_router.post("/talents/ads/create")
+async def create_talent_ad(request: CreateAdRequest, user: User = Depends(get_current_user)):
+    """Create advertisement for talent profile"""
+    user_id = user.user_id
+    
+    talent = await db.talents.find_one({"user_id": user_id, "registration_fee_paid": True})
+    if not talent:
+        raise HTTPException(status_code=400, detail="Must be a registered talent")
+    
+    # Check wallet balance
+    wallet = await db.wallets.find_one({"user_id": user_id})
+    if not wallet or wallet.get("coins_balance", 0) < request.budget:
+        raise HTTPException(status_code=400, detail=f"Insufficient balance for ad budget")
+    
+    # Deduct budget
+    await db.wallets.update_one(
+        {"user_id": user_id},
+        {"$inc": {"coins_balance": -request.budget}}
+    )
+    
+    # Create ad
+    now = datetime.now(timezone.utc)
+    ad_id = str(uuid.uuid4())
+    
+    await db.talent_ads.insert_one({
+        "ad_id": ad_id,
+        "talent_id": talent["talent_id"],
+        "user_id": user_id,
+        "ad_title": request.ad_title,
+        "ad_description": request.ad_description,
+        "budget": request.budget,
+        "spent": 0.0,
+        "impressions": 0,
+        "clicks": 0,
+        "conversions": 0,
+        "is_active": True,
+        "created_at": now,
+        "expires_at": now + timedelta(days=request.duration_days)
+    })
+    
+    return {
+        "success": True,
+        "message": "Advertisement created successfully!",
+        "ad_id": ad_id,
+        "budget": request.budget,
+        "duration_days": request.duration_days
+    }
+
+@api_router.get("/talents/ads/my-ads")
+async def get_my_ads(user: User = Depends(get_current_user)):
+    """Get all ads created by current talent"""
+    user_id = user.user_id
+    
+    ads = await db.talent_ads.find({"user_id": user_id}).to_list(50)
+    
+    return {
+        "ads": [{
+            "ad_id": ad["ad_id"],
+            "ad_title": ad["ad_title"],
+            "budget": ad["budget"],
+            "spent": ad["spent"],
+            "impressions": ad["impressions"],
+            "clicks": ad["clicks"],
+            "conversions": ad["conversions"],
+            "roi": (ad["conversions"] / max(ad["clicks"], 1)) * 100 if ad["clicks"] > 0 else 0,
+            "is_active": ad["is_active"],
+            "expires_at": ad["expires_at"].isoformat() if ad.get("expires_at") else None
+        } for ad in ads],
+        "total": len(ads)
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
