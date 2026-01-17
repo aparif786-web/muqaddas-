@@ -7092,6 +7092,243 @@ async def calculate_financial_breakdown(request: FinancialCalculationRequest):
         }
     }
 
+# ==================== RECEIPTS & THANK YOU NOTES ====================
+
+@api_router.get("/receipt/registration/{user_id}")
+async def generate_registration_receipt(user_id: str):
+    """
+    Generate Registration Receipt with Royal Seal
+    This receipt is auto-generated after ₹1 registration fee
+    """
+    user = await db.users.find_one({"user_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    now = datetime.now(timezone.utc)
+    receipt_id = f"RCP-{uuid.uuid4().hex[:8].upper()}"
+    
+    # Create PDF Receipt
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    
+    # Header with gold styling
+    p.setFillColorRGB(0.85, 0.65, 0.13)  # Gold
+    p.setFont("Helvetica-Bold", 28)
+    p.drawCentredString(width/2, height - 60, "GYAN SULTANAT")
+    
+    p.setFillColorRGB(0.31, 0.78, 0.47)  # Emerald
+    p.setFont("Helvetica-Bold", 14)
+    p.drawCentredString(width/2, height - 85, "💚 MUQADDAS NETWORK 💚")
+    
+    p.setFillColorRGB(0, 0, 0)
+    p.setFont("Helvetica", 12)
+    p.drawCentredString(width/2, height - 105, "Gyaan se Aay, Apne Sapne Sajaye!")
+    
+    # Receipt Title
+    p.setFont("Helvetica-Bold", 20)
+    p.drawCentredString(width/2, height - 150, "REGISTRATION RECEIPT")
+    
+    # Gold line
+    p.setStrokeColorRGB(0.85, 0.65, 0.13)
+    p.setLineWidth(2)
+    p.line(100, height - 165, width - 100, height - 165)
+    
+    # Receipt Details
+    y = height - 200
+    p.setFillColorRGB(0, 0, 0)
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(80, y, f"Receipt No: {receipt_id}")
+    p.drawString(350, y, f"Date: {now.strftime('%d %B %Y')}")
+    
+    y -= 40
+    p.setFont("Helvetica", 11)
+    p.drawString(80, y, f"Registered User: {user.get('name', 'N/A')}")
+    y -= 20
+    p.drawString(80, y, f"Email: {user.get('email', 'N/A')}")
+    y -= 20
+    p.drawString(80, y, f"User ID: {user_id}")
+    
+    # Payment Details Box
+    y -= 50
+    p.setStrokeColorRGB(0, 0, 0)
+    p.setLineWidth(1)
+    p.rect(80, y - 80, width - 160, 90, stroke=1, fill=0)
+    
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(100, y - 15, "Payment Details")
+    
+    p.setFont("Helvetica", 11)
+    p.drawString(100, y - 40, "Registration Fee:")
+    p.drawString(350, y - 40, "₹ 1.00")
+    
+    p.drawString(100, y - 60, "Payment Status:")
+    p.setFillColorRGB(0, 0.5, 0)
+    p.drawString(350, y - 60, "✓ PAID")
+    
+    # Royal Seal Section
+    y -= 130
+    p.setFillColorRGB(0, 0, 0)
+    p.setStrokeColorRGB(0.85, 0.65, 0.13)
+    p.setLineWidth(3)
+    p.roundRect(80, y - 100, width - 160, 110, 10, stroke=1, fill=0)
+    
+    p.setFillColorRGB(0.31, 0.78, 0.47)
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(100, y - 20, "💚 OFFICIAL DIGITAL SEAL - MUQADDAS NETWORK")
+    
+    p.setFillColorRGB(0, 0, 0)
+    p.setFont("Helvetica", 10)
+    p.drawString(100, y - 40, f"Digitally Signed by: Sultan (The Main Developer)")
+    p.drawString(100, y - 55, f"Timestamp: {now.strftime('%d %B %Y, %H:%M:%S UTC')}")
+    p.drawString(100, y - 70, f"Verification Key: {SULTAN_MASTER_SIGNATURE['verification_key']}")
+    p.setFillColorRGB(0, 0.5, 0)
+    p.setFont("Helvetica-Bold", 10)
+    p.drawString(100, y - 88, "Status: ✓ VERIFIED & SECURED BY MUQADDAS TECHNOLOGY")
+    
+    # Footer
+    p.setFillColorRGB(0, 0, 0)
+    p.setFont("Helvetica", 9)
+    p.drawCentredString(width/2, 60, "★ SULTAN'S AUTHORITY ★ MUQADDAS NETWORK ★ 2026 ★")
+    p.drawCentredString(width/2, 45, "This is a computer-generated receipt and requires no physical signature.")
+    p.drawCentredString(width/2, 30, f"Generated: {now.isoformat()}")
+    
+    p.save()
+    buffer.seek(0)
+    
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=registration_receipt_{receipt_id}.pdf"}
+    )
+
+@api_router.post("/charity/thank-you/{user_id}")
+async def generate_charity_thank_you(user_id: str, amount: float = 0.0):
+    """
+    Generate Charity Thank You Note with Sultan's Signature
+    Sent automatically when 2% charity is contributed
+    """
+    user = await db.users.find_one({"user_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    now = datetime.now(timezone.utc)
+    note_id = f"CHR-{uuid.uuid4().hex[:8].upper()}"
+    
+    # Store charity record
+    charity_record = {
+        "note_id": note_id,
+        "user_id": user_id,
+        "amount": amount,
+        "created_at": now,
+        "sultan_signed": True
+    }
+    await db.charity_notes.insert_one(charity_record)
+    
+    return {
+        "success": True,
+        "note_id": note_id,
+        "message": "ধন্যবাদ! আপনার দান মানবতার সেবায় ব্যবহৃত হবে।",
+        "thank_you_note": {
+            "title": "💚 CHARITY THANK YOU NOTE",
+            "from": "Sultan - Gyan Sultanat Founder",
+            "to": user.get("name", "Valued User"),
+            "amount_contributed": f"₹{amount:,.2f}",
+            "message": "আপনার ২% চ্যারিটি অবদান সফলভাবে Live Charity Counter-এ জমা হয়েছে। আপনার দয়া এবং উদারতার জন্য সুলতানের পক্ষ থেকে আন্তরিক ধন্যবাদ। এই অর্থ সরাসরি দরিদ্র ও অসহায় মানুষদের সাহায্যে ব্যবহৃত হবে।",
+            "date": now.strftime("%d %B %Y, %H:%M:%S"),
+            "sultan_signature": {
+                "signed": True,
+                "verification_key": SULTAN_MASTER_SIGNATURE["verification_key"],
+                "status": "✓ Verified & Secured by Muqaddas Technology"
+            }
+        },
+        "seal": "💚 MUQADDAS NETWORK - OFFICIAL SEAL"
+    }
+
+@api_router.get("/charity/thank-you-pdf/{user_id}")
+async def download_charity_thank_you_pdf(user_id: str, amount: float = 0.0):
+    """Download Charity Thank You as PDF with Royal Seal"""
+    user = await db.users.find_one({"user_id": user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    now = datetime.now(timezone.utc)
+    
+    buffer = io.BytesIO()
+    p = canvas.Canvas(buffer, pagesize=A4)
+    width, height = A4
+    
+    # Emerald green header
+    p.setFillColorRGB(0.31, 0.78, 0.47)
+    p.rect(0, height - 100, width, 100, fill=1, stroke=0)
+    
+    p.setFillColorRGB(1, 1, 1)
+    p.setFont("Helvetica-Bold", 32)
+    p.drawCentredString(width/2, height - 50, "THANK YOU")
+    
+    p.setFont("Helvetica", 16)
+    p.drawCentredString(width/2, height - 80, "💚 For Your Charity Contribution 💚")
+    
+    # Content
+    p.setFillColorRGB(0, 0, 0)
+    y = height - 150
+    
+    p.setFont("Helvetica-Bold", 14)
+    p.drawString(80, y, f"Dear {user.get('name', 'Valued Contributor')},")
+    
+    y -= 40
+    p.setFont("Helvetica", 12)
+    
+    message_lines = [
+        "আপনার দান মানবতার সেবায় ব্যবহৃত হবে।",
+        "",
+        f"আপনার চ্যারিটি অবদান: ₹{amount:,.2f}",
+        "",
+        "এই অর্থ সরাসরি Live Charity Counter-এ জমা হয়েছে এবং",
+        "দরিদ্র ও অসহায় মানুষদের সাহায্যে ব্যবহৃত হবে।",
+        "",
+        "আপনার উদারতা এবং মানবতার প্রতি ভালোবাসার জন্য",
+        "সুলতানের পক্ষ থেকে আন্তরিক ধন্যবাদ।"
+    ]
+    
+    for line in message_lines:
+        p.drawString(80, y, line)
+        y -= 22
+    
+    # Royal Seal
+    y -= 30
+    p.setStrokeColorRGB(0.85, 0.65, 0.13)
+    p.setLineWidth(3)
+    p.roundRect(80, y - 100, width - 160, 110, 10, stroke=1, fill=0)
+    
+    p.setFillColorRGB(0.31, 0.78, 0.47)
+    p.setFont("Helvetica-Bold", 12)
+    p.drawString(100, y - 20, "💚 MUQADDAS NETWORK - OFFICIAL SEAL")
+    
+    p.setFillColorRGB(0, 0, 0)
+    p.setFont("Helvetica", 10)
+    p.drawString(100, y - 45, "Signed by: Sultan (The Main Developer)")
+    p.drawString(100, y - 62, f"Verification: {SULTAN_MASTER_SIGNATURE['verification_key']}")
+    p.setFillColorRGB(0, 0.5, 0)
+    p.drawString(100, y - 80, "✓ Verified & Secured by Muqaddas Technology")
+    
+    # Footer
+    p.setFillColorRGB(0.85, 0.65, 0.13)
+    p.setFont("Helvetica-Bold", 10)
+    p.drawCentredString(width/2, 50, "★ SULTAN'S AUTHORITY ★ MUQADDAS NETWORK ★ 2026 ★")
+    p.setFillColorRGB(0, 0, 0)
+    p.setFont("Helvetica", 9)
+    p.drawCentredString(width/2, 35, f"Date: {now.strftime('%d %B %Y')}")
+    
+    p.save()
+    buffer.seek(0)
+    
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f"attachment; filename=charity_thank_you_{user_id}.pdf"}
+    )
+
 @api_router.get("/finance/live-charity-counter")
 async def get_live_charity_counter():
     """Get the live charity counter total"""
