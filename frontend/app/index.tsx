@@ -65,10 +65,12 @@ export default function Index() {
         style={styles.gradient}
       >
         <View style={styles.content}>
-          <Text style={styles.logo}>VIP</Text>
-          <Text style={styles.subtitle}>Wallet & Rewards</Text>
+          <Text style={styles.crown}>👑</Text>
+          <Text style={styles.logo}>GYAN SULTANAT</Text>
+          <Text style={styles.subtitle}>ज्ञान सल्तनत</Text>
+          <Text style={styles.tagline}>Jahan Gyan Raja Hai</Text>
           <ActivityIndicator size="large" color="#FFD700" style={styles.loader} />
-          <Text style={styles.loadingText}>Loading...</Text>
+          <Text style={styles.loadingText}>Loading The Knowledge Empire...</Text>
         </View>
       </LinearGradient>
     </View>
