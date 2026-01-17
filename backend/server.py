@@ -7463,6 +7463,7 @@ async def get_transaction_audit(transaction_id: str):
 
 # ==================== PAYMENT GATEWAY SYSTEM ====================
 # UPI, Card, Net Banking - Indian Payment Methods
+# Owner: Arif Ullah (Sultan)
 # Payoneer Customer ID: 35953271
 
 class PaymentMethod(str, Enum):
@@ -7490,19 +7491,37 @@ class PaymentVerifyRequest(BaseModel):
     payment_id: str
     transaction_id: str
 
-# Sultan's UPI ID for receiving payments
-SULTAN_UPI_ID = "gyansultanat@upi"
+# ==================== SULTAN'S OFFICIAL IDENTITY ====================
+SULTAN_IDENTITY = {
+    "name": "Arif Ullah",
+    "phone": "+91 7638082406",
+    "bank": {
+        "name": "Bandhan Bank",
+        "branch": "Mitham Bangali Branch",
+        "account_no": "10220009994285",
+        "ifsc": "BDBL0001489"
+    },
+    "pan_card": "ALFPU3500M",
+    "aadhar": "8110 6893 5725",
+    "gstin": "18ALFPU3500M1ZU",
+    "business_name": "AP Aayushka Big Design Bazaar"
+}
+
+# Sultan's REAL UPI ID for receiving payments
+SULTAN_UPI_ID = "7638082406@ybl"  # PhonePe UPI ID
+SULTAN_UPI_ID_ALT = "arifullah@bandhan"  # Bank UPI ID
 PAYONEER_CUSTOMER_ID = "35953271"
 
 # Payment configuration
 PAYMENT_CONFIG = {
-    "test_mode": True,  # Set to False for production
+    "test_mode": False,  # PRODUCTION MODE - Real payments enabled
     "currency": "INR",
     "min_amount": 1,
     "max_amount": 100000,
     "supported_methods": ["upi", "card", "net_banking", "wallet"],
     "upi_apps": ["gpay", "phonepe", "paytm", "bhim"],
-    "payoneer_id": PAYONEER_CUSTOMER_ID
+    "payoneer_id": PAYONEER_CUSTOMER_ID,
+    "owner": SULTAN_IDENTITY
 }
 
 @api_router.get("/payment/config")
