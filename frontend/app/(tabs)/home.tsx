@@ -91,7 +91,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={["#1A1A2E', '#16213E', '#0F3460"] as const}
+        colors={['#1A1A2E', '#16213E', '#0F3460']}
         style={styles.gradient}
       >
         <SafeAreaView style={styles.safeArea}>
