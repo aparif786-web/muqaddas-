@@ -135,6 +135,101 @@ class Notification(BaseModel):
     action_url: Optional[str] = None
     created_at: datetime
 
+# ==================== CROWN SYSTEM MODELS ====================
+
+class CrownType(str, Enum):
+    BRONZE = "bronze"
+    SILVER = "silver"
+    GOLD = "gold"
+    GIFTER = "gifter"
+    QUEEN = "queen"
+    VIDEO_CREATOR = "video_creator"
+
+class UserCrown(BaseModel):
+    crown_id: str
+    user_id: str
+    crown_type: CrownType
+    earned_at: datetime
+    expires_at: Optional[datetime] = None
+    is_active: bool = True
+
+# ==================== VIDEO LEADERBOARD MODELS ====================
+
+class VideoEntry(BaseModel):
+    video_id: str
+    user_id: str
+    title: str
+    description: Optional[str] = None
+    likes_count: int = 0
+    views_count: int = 0
+    shares_count: int = 0
+    gifts_received: float = 0.0
+    created_at: datetime
+    month_year: str  # Format: "2025-01"
+
+class LeaderboardEntry(BaseModel):
+    rank: int
+    user_id: str
+    user_name: str
+    user_picture: Optional[str] = None
+    score: int
+    crown_type: Optional[CrownType] = None
+    prize: Optional[str] = None
+
+# ==================== MHA EVENT MODELS ====================
+
+class MHAEvent(BaseModel):
+    event_id: str
+    event_name: str
+    event_type: str  # "monthly", "weekly", "special"
+    start_date: datetime
+    end_date: datetime
+    prize_pool: dict  # {"1st": "iPhone 16", "2nd": "Android Phone", ...}
+    is_active: bool = True
+    created_at: datetime
+
+class MHAParticipant(BaseModel):
+    participant_id: str
+    event_id: str
+    user_id: str
+    total_score: int = 0
+    rank: Optional[int] = None
+    crown_earned: Optional[CrownType] = None
+    prize_won: Optional[str] = None
+    joined_at: datetime
+
+# ==================== CHARITY SYSTEM CONSTANTS ====================
+
+# Company revenue milestones
+CHARITY_PHASE_1_THRESHOLD = 10_000_000_000  # 10 Billion
+CHARITY_PHASE_1_RATE = 0.02  # 2% before 10B
+CHARITY_PHASE_2_RATE = 0.45  # 45% after 10B
+SECURITY_FUND_RATE = 0.01   # 1% always
+
+# Monthly Video Leaderboard Prizes
+MONTHLY_PRIZES = {
+    1: {"prize": "iPhone 16 Pro Max", "coins": 100000},
+    2: {"prize": "Samsung Galaxy S24 Ultra", "coins": 75000},
+    3: {"prize": "MacBook Air M3", "coins": 50000},
+    4: {"prize": "iPad Pro", "coins": 30000},
+    5: {"prize": "AirPods Pro", "coins": 20000},
+    6: {"prize": "10,000 Coins", "coins": 10000},
+    7: {"prize": "10,000 Coins", "coins": 10000},
+    8: {"prize": "10,000 Coins", "coins": 10000},
+    9: {"prize": "10,000 Coins", "coins": 10000},
+    10: {"prize": "10,000 Coins", "coins": 10000},
+}
+
+# Crown requirements
+CROWN_REQUIREMENTS = {
+    CrownType.BRONZE: {"min_likes": 100, "min_videos": 5},
+    CrownType.SILVER: {"min_likes": 1000, "min_videos": 20},
+    CrownType.GOLD: {"min_likes": 10000, "min_videos": 50},
+    CrownType.GIFTER: {"min_gifts_sent": 10000},
+    CrownType.QUEEN: {"special_achievement": True},
+    CrownType.VIDEO_CREATOR: {"min_videos": 100, "min_total_views": 100000},
+}
+
 # ==================== VIP LEVELS DATA ====================
 
 VIP_LEVELS_DATA = [
