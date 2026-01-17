@@ -76,7 +76,7 @@ export default function LoginScreen() {
             {/* Features Section */}
             <View style={styles.features}>
               <FeatureItem icon="school" text="Education Platform" />
-              <FeatureItem icon="game-controller" text="Gyan Yuddh" />
+              <FeatureItem icon="bulb" text="Gyan Yuddh" />
               <FeatureItem icon="heart" text="Charity System" />
               <FeatureItem icon="trophy" text="Rewards & Leaderboard" />
             </View>
