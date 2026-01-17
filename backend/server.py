@@ -3248,6 +3248,12 @@ async def get_education_profile(current_user: User = Depends(get_current_user)):
         {"_id": 0}
     ).to_list(50)
     
+    # Convert to list of dicts without ObjectId
+    enrolled_courses_clean = []
+    for course in enrolled_courses:
+        if isinstance(course, dict):
+            enrolled_courses_clean.append(course)
+    
     level_info = LEARNING_LEVELS.get(current_level, LEARNING_LEVELS["seedling"])
     next_level = None
     for lvl, info in sorted(LEARNING_LEVELS.items(), key=lambda x: x[1]["min_hours"]):
