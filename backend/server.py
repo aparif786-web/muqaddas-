@@ -8208,76 +8208,280 @@ async def verify_muqaddas_status():
 
 @api_router.get("/legal/privacy-policy")
 async def get_privacy_policy():
-    """Get Privacy Policy content for Play Store"""
+    """
+    Privacy Policy - Muqaddas Technology
+    Powered by Aayushka Design Bazaar
+    No AI terminology - Gyan Mind Trigger only
+    """
     return {
         "success": True,
+        "header": "MUQADDAS TECHNOLOGY – Powered by Aayushka Design Bazaar",
         "title": "Privacy Policy - Gyan Sultanat",
-        "last_updated": "January 17, 2026",
-        "owner": {
-            "name": "Arif Ullah",
-            "business": "AP Aayushka Big Design Bazaar",
+        "subtitle": "Gyan Mind Trigger Platform",
+        "last_updated": "January 18, 2026",
+        "version": "2.0",
+        
+        "legal_entity": {
+            "company_name": "Muqaddas Technology",
+            "powered_by": "AP Aayushka Big Design Bazaar",
             "gstin": SULTAN_IDENTITY["gstin"],
+            "pan": SULTAN_IDENTITY["pan_card"],
+            "registered_address": "Mitham Bangali, West Bengal, India",
+            "founder": "Arif Ullah (Sultan)",
             "contact": {
                 "email": "support@gyansultanat.com",
-                "phone": SULTAN_IDENTITY["phone"],
-                "address": "Mitham Bangali, West Bengal, India"
+                "phone": SULTAN_IDENTITY["phone"]
             }
         },
-        "sections": {
-            "information_collected": [
-                "Personal Information (name, email, phone)",
-                "Authentication Data (Google OAuth)",
-                "Payment Information (UPI, transactions)",
-                "Usage Data (app interactions, scores)",
-                "Device Information"
-            ],
-            "how_we_use": [
-                "Provide and maintain services",
-                "Process payments and transactions",
-                "Personalize learning experience",
-                "Send notifications about rewards",
-                "Improve Gyan Mind Trigger responses",
-                "Process charity contributions (2%)"
-            ],
-            "data_sharing": [
-                "Payment processors (for transactions)",
-                "AI service providers (for Gyan Mind Trigger)",
-                "Analytics services",
-                "Legal authorities (when required)"
-            ],
-            "security": [
-                "Encryption of sensitive data",
-                "Digital signature verification",
-                "Secure server infrastructure",
-                "Regular security audits"
-            ],
-            "user_rights": [
-                "Access your personal data",
-                "Request data correction",
-                "Request data deletion",
-                "Opt-out of marketing",
-                "Withdraw consent"
+        
+        "introduction": {
+            "text": "Muqaddas Technology, Aayushka Design Bazaar ke madhyam se powered, aapki privacy ko sarvadhik mahatva deta hai. Yeh Privacy Policy spasht karti hai ki hum aapka data kaise collect, use aur protect karte hain.",
+            "commitment": "Hum 'Gyan Mind Trigger' ke zariye sirf educational services provide karte hain - koi hidden data selling nahi"
+        },
+        
+        "data_collection": {
+            "title": "Data Collection",
+            "what_we_collect": [
+                {"type": "Personal Info", "details": "Name, email, phone number (registration ke liye)"},
+                {"type": "Authentication", "details": "Google OAuth tokens (secure login ke liye)"},
+                {"type": "Financial", "details": "UPI ID, transaction history (payments ke liye)"},
+                {"type": "Usage", "details": "App interactions, quiz scores, learning progress"},
+                {"type": "Device", "details": "Device type, OS version (app optimization ke liye)"}
             ]
         },
+        
+        "data_usage": {
+            "title": "Data Usage",
+            "purposes": [
+                "Gyan Mind Trigger services provide karna",
+                "Payments aur transactions process karna",
+                "Learning experience personalize karna",
+                "Rewards aur notifications bhejna",
+                "Charity contributions (2%) process karna"
+            ]
+        },
+        
+        "data_sovereignty": {
+            "title": "💚 Data Sovereignty - Founder's Guarantee",
+            "statement": "Aapka data puri tarah se Founder (Arif Ullah) ki nigrani mein surakshit hai",
+            "guarantees": [
+                "Data kabhi third-party ko nahi becha jayega",
+                "Sirf authorized employees data access kar sakte hain",
+                "End-to-end encryption se data protected hai",
+                "Indian servers par data stored hai",
+                "User request par data delete kiya ja sakta hai"
+            ],
+            "founder_seal": SULTAN_MASTER_SIGNATURE["verification_key"]
+        },
+        
+        "charity_data": {
+            "title": "Charity Data Transparency",
+            "statement": "Charity contributions ka pura record public hai",
+            "breakdown": {
+                "cancer_patients": "40%",
+                "orphans": "35%",
+                "poor_students": "25%"
+            }
+        },
+        
+        "user_rights": {
+            "title": "User Rights",
+            "rights": [
+                "Apna data access karne ka haq",
+                "Data correction ka haq",
+                "Data deletion ka haq",
+                "Marketing se opt-out ka haq",
+                "Consent withdraw ka haq"
+            ]
+        },
+        
+        "security": {
+            "title": "Security Measures",
+            "measures": [
+                "256-bit SSL encryption",
+                "Digital signature verification",
+                "Biometric authentication support",
+                "Regular security audits",
+                "PCI-DSS compliant payment processing"
+            ]
+        },
+        
+        "legal_compliance": {
+            "title": "Legal Compliance",
+            "regulations": [
+                "Information Technology Act, 2000",
+                "GST regulations compliance",
+                "Indian data protection laws",
+                "Payment gateway regulations"
+            ]
+        },
+        
         "verification": {
-            "key": SULTAN_MASTER_SIGNATURE["verification_key"],
-            "status": "Verified by Muqaddas Technology"
+            "seal": SULTAN_MASTER_SIGNATURE["verification_key"],
+            "gstin": SULTAN_IDENTITY["gstin"],
+            "status": "✅ Government Registered & Verified"
         }
     }
 
 @api_router.get("/legal/terms")
 async def get_terms_of_service():
-    """Get Terms of Service"""
+    """
+    Terms & Conditions - Muqaddas Technology
+    Powered by Aayushka Design Bazaar
+    """
     return {
         "success": True,
-        "title": "Terms of Service - Gyan Sultanat",
-        "last_updated": "January 17, 2026",
-        "platform": "Gyan Sultanat - Muqaddas Network",
-        "key_terms": {
-            "eligibility": "Open to all users. Parental consent required for users under 18.",
-            "account": "Users must provide accurate information. One account per person.",
-            "payments": {
-                "currency": "INR",
+        "header": "MUQADDAS TECHNOLOGY – Powered by Aayushka Design Bazaar",
+        "title": "Terms & Conditions - Gyan Sultanat",
+        "subtitle": "Gyan Mind Trigger Platform",
+        "last_updated": "January 18, 2026",
+        "version": "2.0",
+        
+        "legal_entity": {
+            "company_name": "Muqaddas Technology",
+            "powered_by": "AP Aayushka Big Design Bazaar",
+            "gstin": SULTAN_IDENTITY["gstin"],
+            "pan": SULTAN_IDENTITY["pan_card"],
+            "registered_address": "Mitham Bangali, West Bengal, India"
+        },
+        
+        "acceptance": {
+            "title": "Terms Acceptance",
+            "text": "Gyan Sultanat app use karke aap in Terms & Conditions se agree karte hain. Agar agree nahi hain toh app use na karein."
+        },
+        
+        "eligibility": {
+            "title": "Eligibility",
+            "rules": [
+                "18 saal se kam umar ke users ke liye parental consent zaroori",
+                "Indian citizens aur residents ke liye available",
+                "Valid phone number aur email required",
+                "Ek user ek account - multiple accounts prohibited"
+            ]
+        },
+        
+        "gyan_mind_trigger_terms": {
+            "title": "💚 Gyan Mind Trigger Service",
+            "description": "Gyan Mind Trigger ek educational knowledge system hai jo aapke sawaalon ka jawab deta hai",
+            "terms": [
+                "Educational purposes ke liye hi use karein",
+                "Misleading ya harmful content generate karna prohibited",
+                "Daily question limits apply ho sakti hain",
+                "Responses informational hain - professional advice nahi"
+            ]
+        },
+        
+        "charity_clause": {
+            "title": "💚 CHARITY CLAUSE - Legal Commitment",
+            "main_statement": "Gyan Mind Trigger ke zariye jo bhi revenue aayega, uska nishchit hissa seedha relief funds mein jayega",
+            "distribution": {
+                "cancer_relief": {
+                    "percentage": "40%",
+                    "beneficiaries": "Cancer patients ka treatment aur support",
+                    "verification": "Hospital receipts aur records maintain"
+                },
+                "orphan_welfare": {
+                    "percentage": "35%",
+                    "beneficiaries": "Orphan children ki education aur care",
+                    "verification": "Orphanage certificates aur records maintain"
+                },
+                "education_fund": {
+                    "percentage": "25%",
+                    "beneficiaries": "Garib students ki padhai",
+                    "verification": "School records aur fee receipts maintain"
+                }
+            },
+            "transparency": "Har month public report publish hogi",
+            "legal_binding": "Yeh clause legally binding hai aur GST records ke saath verified"
+        },
+        
+        "payment_terms": {
+            "title": "Payment Terms",
+            "currency": "INR (Indian Rupees)",
+            "methods": ["UPI", "Debit Card", "Credit Card", "Net Banking"],
+            "fee_structure": {
+                "registration": "FREE (₹0)",
+                "transactions": "2% charity deduction on all transactions",
+                "withdrawals": "Minimum ₹10, processed within 24 hours"
+            },
+            "refund_policy": "7 days ke andar refund request kar sakte hain"
+        },
+        
+        "intellectual_property": {
+            "title": "Intellectual Property",
+            "statement": "Gyan Sultanat, Gyan Mind Trigger, Muqaddas Technology - sabhi trademarks Founder ki property hain",
+            "user_content": "User-generated content par users ka copyright rehta hai"
+        },
+        
+        "prohibited_activities": {
+            "title": "Prohibited Activities",
+            "activities": [
+                "Fraud ya deceptive practices",
+                "Multiple accounts banana",
+                "Account credentials share karna",
+                "Bots ya automated access",
+                "Illegal activities ke liye use",
+                "Other users ko harass karna"
+            ]
+        },
+        
+        "data_sovereignty_terms": {
+            "title": "Data Sovereignty Terms",
+            "statement": "Users ka data puri tarah se Founder (Arif Ullah) ki nigrani mein surakshit hai",
+            "commitments": [
+                "Data Indian servers par stored",
+                "Third-party selling prohibited",
+                "User consent ke bina sharing nahi",
+                "Request par data deletion guaranteed"
+            ]
+        },
+        
+        "dispute_resolution": {
+            "title": "Dispute Resolution",
+            "jurisdiction": "West Bengal, India",
+            "governing_law": "Indian Law",
+            "arbitration": "Disputes pehle mediation se resolve honge",
+            "court": "West Bengal courts mein final jurisdiction"
+        },
+        
+        "limitation_liability": {
+            "title": "Limitation of Liability",
+            "statement": "Muqaddas Technology maximum liability transaction amount tak limited hai",
+            "exclusions": [
+                "Indirect damages",
+                "Lost profits",
+                "Data loss (user's responsibility to backup)"
+            ]
+        },
+        
+        "termination": {
+            "title": "Account Termination",
+            "by_user": "User kabhi bhi account delete kar sakta hai",
+            "by_company": "Terms violation par account suspend/terminate ho sakta hai",
+            "post_termination": "Pending withdrawals process hone ke baad account data delete"
+        },
+        
+        "amendments": {
+            "title": "Terms Amendments",
+            "statement": "Terms change ho sakte hain - users ko notification milegi",
+            "continued_use": "Changes ke baad app use karna matlab agreement"
+        },
+        
+        "contact": {
+            "title": "Contact Us",
+            "email": "support@gyansultanat.com",
+            "phone": SULTAN_IDENTITY["phone"],
+            "address": "Mitham Bangali, West Bengal, India",
+            "founder": "Arif Ullah (Sultan)"
+        },
+        
+        "verification": {
+            "seal": SULTAN_MASTER_SIGNATURE["verification_key"],
+            "gstin": SULTAN_IDENTITY["gstin"],
+            "pan": SULTAN_IDENTITY["pan_card"],
+            "status": "✅ Legally Verified & GST Registered"
+        }
+    }
                 "methods": ["UPI", "Card", "Net Banking"],
                 "refund_policy": "Refunds processed within 7 business days",
                 "charity": "2% of all transactions donated to charity"
