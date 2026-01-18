@@ -35,7 +35,7 @@ mongo_url = os.environ['MONGO_URL']
 client = AsyncIOMotorClient(mongo_url)
 db = client[os.environ['DB_NAME']]
 
-# Emergent LLM Key for Gyan Guru
+# Emergent LLM Key for Gyan Mind Trigger
 EMERGENT_LLM_KEY = "sk-emergent-89e7765DbCfE5E9Da8"
 openai_client = AsyncOpenAI(
     api_key=EMERGENT_LLM_KEY,
@@ -353,7 +353,7 @@ class EducationalAd(BaseModel):
     is_verified: bool = False
     created_at: datetime
 
-# Gyan Guru Configuration
+# Gyan Mind Trigger Configuration
 AI_TEACHER_CONFIG = {
     "max_questions_per_day_free": 10,
     "max_questions_per_day_vip": 100,
@@ -453,9 +453,9 @@ AD_PRICING = {
         "description": "Native sponsored educational content"
     },
     "ai_integration": {
-        "name": "Gyan Guru Integration",
+        "name": "Gyan Mind Trigger Integration",
         "cpm": 500,               # ₹500 per 1000 mentions
-        "description": "Gyan Guru recommends your product/service"
+        "description": "Gyan Mind Trigger recommends your product/service"
     }
 }
 
@@ -6094,7 +6094,7 @@ async def get_my_ads(user: User = Depends(get_current_user)):
 
 @api_router.get("/ai-teacher/subjects")
 async def get_ai_teacher_subjects():
-    """Get all subjects Gyan Guru can help with"""
+    """Get all subjects Gyan Mind Trigger can help with"""
     subjects = [
         {"subject": "mathematics", "name": "गणित (Mathematics)", "icon": "🔢"},
         {"subject": "science", "name": "विज्ञान (Science)", "icon": "🔬"},
@@ -6113,7 +6113,7 @@ async def get_ai_teacher_subjects():
     return {
         "subjects": subjects,
         "config": AI_TEACHER_CONFIG,
-        "message": "Gyan Guru - Aapka personal shikshak! Koi bhi sawaal poochho!"
+        "message": "Gyan Mind Trigger - Aapka personal shikshak! Koi bhi sawaal poochho!"
     }
 
 class AITeacherQuestionRequest(BaseModel):
@@ -6126,7 +6126,7 @@ async def ask_ai_teacher(
     request: AITeacherQuestionRequest,
     user: User = Depends(get_current_user)
 ):
-    """Ask a question to Gyan Guru"""
+    """Ask a question to Gyan Mind Trigger"""
     user_id = user.user_id
     
     # Check daily question limit
@@ -6188,7 +6188,7 @@ async def ask_ai_teacher(
     }
 
 async def generate_ai_teacher_response_llm(subject: str, question: str, language: str) -> dict:
-    """Generate Gyan Guru response using real LLM (Emergent API) - MULTILINGUAL SUPPORT"""
+    """Generate Gyan Mind Trigger response using real LLM (Emergent API) - MULTILINGUAL SUPPORT"""
     
     # Subject-specific system prompts
     subject_prompts = {
@@ -6261,7 +6261,7 @@ async def generate_ai_teacher_response_llm(subject: str, question: str, language
     lang_instruction = language_instructions.get(language, 
         f"Respond in {language}. If you cannot respond in this language, use English and mention that.")
     
-    full_system = f"""You are the Gyan Guru for Gyan Sultanat (ज्ञान सल्तनत) - The Global Knowledge Empire.
+    full_system = f"""You are the Gyan Mind Trigger for Gyan Sultanat (ज्ञान सल्तनत) - The Global Knowledge Empire.
 
 {system_prompt}
 
@@ -6317,7 +6317,7 @@ Guidelines:
         }
         
     except Exception as e:
-        logging.error(f"Gyan Guru LLM Error: {str(e)}")
+        logging.error(f"Gyan Mind Trigger LLM Error: {str(e)}")
         # Fallback to basic response
         return {
             "answer": f"Main aapke sawaal '{question}' ka jawab dhundh raha hoon. Kripya thodi der baad dobara try karein ya apna sawaal alag tarike se poochhein.",
@@ -6348,7 +6348,7 @@ async def give_ai_teacher_feedback(
     helpful: bool,
     user: User = Depends(get_current_user)
 ):
-    """Give feedback on Gyan Guru's answer"""
+    """Give feedback on Gyan Mind Trigger's answer"""
     query = await db.ai_teacher_queries.find_one({"query_id": query_id})
     if not query:
         raise HTTPException(status_code=404, detail="Query not found")
@@ -6362,7 +6362,7 @@ async def give_ai_teacher_feedback(
     
     return {
         "success": True,
-        "message": "Thank you for your feedback! It helps Gyan Guru improve."
+        "message": "Thank you for your feedback! It helps Gyan Mind Trigger improve."
     }
 
 @api_router.get("/ai-teacher/history")
@@ -6370,7 +6370,7 @@ async def get_ai_teacher_history(
     limit: int = 20,
     user: User = Depends(get_current_user)
 ):
-    """Get user's Gyan Guru conversation history"""
+    """Get user's Gyan Mind Trigger conversation history"""
     user_id = user.user_id
     
     queries = await db.ai_teacher_queries.find(
@@ -6438,7 +6438,7 @@ async def get_company_benefits():
             },
             {
                 "title": "AI-Powered Promotion",
-                "description": "Gyan Guru recommends your content to relevant users",
+                "description": "Gyan Mind Trigger recommends your content to relevant users",
                 "icon": "🤖"
             },
             {
@@ -6533,14 +6533,14 @@ async def register_educational_ad(request: RegisterEducationalAdRequest):
     
     return {
         "success": True,
-        "message": "Educational ad registered! Gyan Guru will explain your company to relevant learners.",
+        "message": "Educational ad registered! Gyan Mind Trigger will explain your company to relevant learners.",
         "ad_id": ad_id,
         "status": "pending_verification"
     }
 
 @api_router.get("/educational-ads/active")
 async def get_active_educational_ads(subject: Optional[str] = None):
-    """Get active educational ads (for Gyan Guru to reference)"""
+    """Get active educational ads (for Gyan Mind Trigger to reference)"""
     query = {"is_active": True, "is_verified": True}
     if subject:
         query["target_subjects"] = subject
@@ -8236,12 +8236,12 @@ async def get_privacy_policy():
                 "Process payments and transactions",
                 "Personalize learning experience",
                 "Send notifications about rewards",
-                "Improve Gyan Guru responses",
+                "Improve Gyan Mind Trigger responses",
                 "Process charity contributions (2%)"
             ],
             "data_sharing": [
                 "Payment processors (for transactions)",
-                "AI service providers (for Gyan Guru)",
+                "AI service providers (for Gyan Mind Trigger)",
                 "Analytics services",
                 "Legal authorities (when required)"
             ],
@@ -8308,9 +8308,9 @@ async def get_release_info():
         },
         "category": "Education",
         "content_rating": "Everyone",
-        "short_description": "শিক্ষা থেকে আয় করুন! Gyan Guru, Quiz, Rewards - সব এক অ্যাপে।",
+        "short_description": "শিক্ষা থেকে আয় করুন! Gyan Mind Trigger, Quiz, Rewards - সব এক অ্যাপে।",
         "features": [
-            "🤖 Gyan Guru (GPT-4 powered, 100+ languages)",
+            "🤖 Gyan Mind Trigger (GPT-4 powered, 100+ languages)",
             "🎮 Gyan Yuddh (Daily quiz competitions)",
             "💰 Triple Wallet (Coins, Diamonds, Rupees)",
             "💳 UPI Payment (Secure Indian payments)",
@@ -8692,7 +8692,7 @@ async def free_user_registration(name: str, email: str, phone: str = None):
             "charity_active": True
         },
         "next_steps": [
-            "Gyan Guru से कुछ भी पूछें",
+            "Gyan Mind Trigger से कुछ भी पूछें",
             "Gyan Yuddh खेलें और Coins जीतें",
             "अपना बैलेंस कभी भी निकालें"
         ]
