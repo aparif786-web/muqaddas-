@@ -31,7 +31,7 @@ interface Message {
   timestamp: Date;
 }
 
-export default function GyanGuruScreen() {
+export default function GyanMindScreen() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [selectedSubject, setSelectedSubject] = useState<string>('general');
   const [messages, setMessages] = useState<Message[]>([]);
@@ -46,7 +46,7 @@ export default function GyanGuruScreen() {
     setMessages([{
       id: '1',
       type: 'gyan',
-      text: '🙏 नमस्ते! Main aapka Gyan Guru hoon। Koi bhi sawaal poochho - Mathematics, Science, Law, Health, ya kuch bhi! Main aapki madad ke liye yahan hoon।',
+      text: '🙏 नमस्ते! Main aapka Gyan Mind Trigger hoon। Koi bhi sawaal poochho - Mathematics, Science, Law, Health, ya kuch bhi! Main aapki madad ke liye yahan hoon।',
       timestamp: new Date()
     }]);
   }, []);
@@ -176,8 +176,8 @@ export default function GyanGuruScreen() {
             <View style={styles.headerLeft}>
               <Text style={styles.headerIcon}>🧠</Text>
               <View>
-                <Text style={styles.headerTitle}>Gyan Guru</Text>
-                <Text style={styles.headerSubtitle}>Aapka Personal Shikshak</Text>
+                <Text style={styles.headerTitle}>Gyan Mind Trigger</Text>
+                <Text style={styles.headerSubtitle}>Mind Trigger System</Text>
               </View>
             </View>
             <View style={styles.questionsCounter}>
@@ -229,7 +229,7 @@ export default function GyanGuruScreen() {
                 </View>
                 <View style={styles.typingBubble}>
                   <ActivityIndicator size="small" color="#FFD700" />
-                  <Text style={styles.typingText}>Gyan dhundh raha hoon...</Text>
+                  <Text style={styles.typingText}>Gyan Mind processing...</Text>
                 </View>
               </View>
             )}
