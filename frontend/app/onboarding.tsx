@@ -39,11 +39,11 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
   {
     id: 2,
     title: "📚 Seekho",
-    subtitle: "Gyan Guru se",
-    description: "Koi bhi sawaal poochho - Math, Science, Law, Health - Gyan Guru 24/7 available hai!",
+    subtitle: "Gyan Mind Trigger se",
+    description: "Koi bhi sawaal poochho - Math, Science, Law, Health - Gyan Mind Trigger 24/7 available hai!",
     icon: "🧠",
     color: "#4CAF50",
-    aiMessage: "Gyan Guru aapka personal tutor hai. Koi bhi subject, koi bhi sawaal - instant jawab milega!"
+    aiMessage: "Gyan Mind Trigger aapka personal tutor hai. Koi bhi subject, koi bhi sawaal - instant jawab milega!"
   },
   {
     id: 3,
@@ -76,7 +76,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     id: 6,
     title: "🚀 Shuru Karo",
     subtitle: "Abhi!",
-    description: "Aap taiyaar hain! Gyan Guru se sawaal poochho, Talent ban kar kamao!",
+    description: "Aap taiyaar hain! Gyan Mind Trigger se sawaal poochho, Talent ban kar kamao!",
     icon: "✨",
     color: "#FF9800",
     aiMessage: "Congratulations! Ab aap Gyan Sultanat ke member hain. Koi bhi help chahiye - main yahan hoon!"
