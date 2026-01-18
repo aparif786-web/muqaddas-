@@ -34,16 +34,16 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     description: "Yeh sirf ek app nahi - yeh ek REVOLUTION hai! Gyaan se Aay, Apne Sapne Sajaye!",
     icon: "👑",
     color: "#FFD700",
-    aiMessage: "Main aapka AI Guide hoon. Main aapko step-by-step samjhaunga ki Gyan Sultanat kaise kaam karti hai!"
+    aiMessage: "Main aapka Gyan Guide hoon. Main aapko step-by-step samjhaunga ki Gyan Sultanat kaise kaam karti hai!"
   },
   {
     id: 2,
     title: "📚 Seekho",
-    subtitle: "AI Teacher se",
-    description: "Koi bhi sawaal poochho - Math, Science, Law, Health - AI Teacher 24/7 available hai!",
-    icon: "🤖",
+    subtitle: "Gyan Guru se",
+    description: "Koi bhi sawaal poochho - Math, Science, Law, Health - Gyan Guru 24/7 available hai!",
+    icon: "🧠",
     color: "#4CAF50",
-    aiMessage: "AI Teacher aapka personal tutor hai. Koi bhi subject, koi bhi sawaal - instant jawab milega!"
+    aiMessage: "Gyan Guru aapka personal tutor hai. Koi bhi subject, koi bhi sawaal - instant jawab milega!"
   },
   {
     id: 3,
@@ -76,7 +76,7 @@ const ONBOARDING_STEPS: OnboardingStep[] = [
     id: 6,
     title: "🚀 Shuru Karo",
     subtitle: "Abhi!",
-    description: "Aap taiyaar hain! AI Teacher se sawaal poochho, Talent ban kar kamao!",
+    description: "Aap taiyaar hain! Gyan Guru se sawaal poochho, Talent ban kar kamao!",
     icon: "✨",
     color: "#FF9800",
     aiMessage: "Congratulations! Ab aap Gyan Sultanat ke member hain. Koi bhi help chahiye - main yahan hoon!"
