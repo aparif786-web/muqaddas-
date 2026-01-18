@@ -8786,6 +8786,263 @@ async def get_day1_zero_profit_status():
         "seal": SULTAN_MASTER_SIGNATURE["verification_key"]
     }
 
+# ==================== ABOUT US & CHARITY MISSION ====================
+
+@api_router.get("/about-us")
+async def get_about_us():
+    """
+    About Us - Muqaddas Technology & Gyan Sultanat Mission
+    Cancer/Orphan Fund Details
+    """
+    return {
+        "success": True,
+        "title": "💚 MUQADDAS TECHNOLOGY - About Us",
+        "tagline": "Gyan Mind Trigger - Duniya Badalne Ki Shuruat",
+        "welcome_message": "Gyan Mind Trigger mein aapka swagat hai - Duniya badalne ki shuruat yahan se hoti hai.",
+        
+        "founder": {
+            "name": "Arif Ullah (Sultan)",
+            "title": "Founder & CEO",
+            "phone": SULTAN_IDENTITY["phone"],
+            "business": SULTAN_IDENTITY["business_name"],
+            "verified": True
+        },
+        
+        "mission": {
+            "title": "💚 10 Billion Charity Mission",
+            "description": "Har transaction ka 2% seedha charity mein jaata hai - Cancer patients aur orphans ke liye",
+            "target": "₹10,00,00,00,000 (10 Billion)",
+            "current_status": "Active & Collecting"
+        },
+        
+        "fee_breakdown": {
+            "title": "📋 ₹15 Ka Hisaab (Transparency)",
+            "total_fee": "₹15",
+            "breakdown": [
+                {
+                    "amount": "₹10",
+                    "purpose": "App Maintenance & Development",
+                    "description": "Server, security, updates ke liye"
+                },
+                {
+                    "amount": "₹5",
+                    "purpose": "Cancer Patient & Orphan Fund",
+                    "description": "Seedha hospital aur orphanage ko jaata hai"
+                }
+            ],
+            "transparency": "Har paisa ka hisaab public hai - koi hidden charges nahi"
+        },
+        
+        "charity_fund": {
+            "name": "Muqaddas Charity Fund",
+            "beneficiaries": [
+                {
+                    "category": "Cancer Patients",
+                    "icon": "🎗️",
+                    "description": "Treatment ke liye financial help"
+                },
+                {
+                    "category": "Orphans",
+                    "icon": "👶",
+                    "description": "Education aur care ke liye support"
+                },
+                {
+                    "category": "Poor Students",
+                    "icon": "📚",
+                    "description": "Free education aur resources"
+                }
+            ],
+            "how_it_works": [
+                "Har transaction ka 2% automatically charity pool mein",
+                "Monthly distribution to verified NGOs",
+                "Complete transparency with public reports",
+                "Digital signature verification on every donation"
+            ]
+        },
+        
+        "platform_features": {
+            "gyan_mind_trigger": {
+                "name": "🧠 Gyan Mind Trigger",
+                "description": "Duniya ka sabse smart learning system - koi bhi sawaal, instant jawab",
+                "languages": "100+ bhashayein support"
+            },
+            "gyan_yuddh": {
+                "name": "🎮 Gyan Yuddh",
+                "description": "Knowledge competition - seekho aur jeeto",
+                "prizes": "Real prizes - iPhone, Samsung, Cash"
+            },
+            "earn_system": {
+                "name": "💰 Education-to-Earn",
+                "description": "Padho bhi, padhao bhi, kamao bhi",
+                "revenue_share": "Teachers ko 70-75% revenue"
+            }
+        },
+        
+        "values": [
+            "💚 Charity First - Profit Later",
+            "🔒 100% Transparency",
+            "🙏 Service to Humanity",
+            "📚 Knowledge is Power",
+            "🌍 Global Mission, Local Impact"
+        ],
+        
+        "contact": {
+            "email": "support@gyansultanat.com",
+            "phone": SULTAN_IDENTITY["phone"],
+            "address": "Mitham Bangali, West Bengal, India"
+        },
+        
+        "verification": {
+            "seal": SULTAN_MASTER_SIGNATURE["verification_key"],
+            "pan": SULTAN_IDENTITY["pan_card"],
+            "gstin": SULTAN_IDENTITY["gstin"],
+            "status": "✅ Government Verified"
+        }
+    }
+
+@api_router.get("/charity/mission")
+async def get_charity_mission():
+    """
+    Cancer/Orphan Fund - Complete Details
+    ₹15 breakdown (₹10 maintenance + ₹5 charity)
+    """
+    now = datetime.now(timezone.utc)
+    
+    # Get total charity collected
+    charity_pipeline = [
+        {"$match": {"transaction_type": "charity_contribution", "status": "completed"}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]
+    result = await db.wallet_transactions.aggregate(charity_pipeline).to_list(1)
+    total_charity = result[0]["total"] if result else 0.0
+    
+    return {
+        "success": True,
+        "mission_name": "💚 MUQADDAS CHARITY MISSION",
+        "tagline": "Har Gyan Se Seva, Har Paisa Se Daan",
+        
+        "target": {
+            "amount": "₹10,00,00,00,000",
+            "raw": 10000000000,
+            "description": "10 Billion Rupees for Humanity"
+        },
+        
+        "collected": {
+            "amount": f"₹{total_charity:,.2f}",
+            "raw": total_charity,
+            "percentage": f"{(total_charity/10000000000)*100:.4f}%"
+        },
+        
+        "fee_breakdown_15rs": {
+            "title": "₹15 Registration Ka Hisaab",
+            "details": [
+                {
+                    "amount": 10,
+                    "label": "₹10 - App Maintenance",
+                    "icon": "🔧",
+                    "usage": [
+                        "Server hosting & security",
+                        "App updates & bug fixes",
+                        "Customer support",
+                        "Development costs"
+                    ]
+                },
+                {
+                    "amount": 5,
+                    "label": "₹5 - Patient & Orphan Fund",
+                    "icon": "💚",
+                    "usage": [
+                        "Cancer patient treatment",
+                        "Orphan education & care",
+                        "Medical emergencies",
+                        "Food & shelter"
+                    ]
+                }
+            ],
+            "total": 15,
+            "transparency_note": "100% hisaab public - koi hidden fees nahi"
+        },
+        
+        "2_percent_charity": {
+            "title": "Har Transaction Ka 2%",
+            "description": "App mein jo bhi transaction ho, uska 2% charity mein jaata hai",
+            "example": {
+                "transaction": "₹100",
+                "charity": "₹2",
+                "to_user": "₹98"
+            }
+        },
+        
+        "beneficiaries": [
+            {
+                "name": "Cancer Patients",
+                "icon": "🎗️",
+                "allocation": "40%",
+                "help_type": "Treatment, medicines, hospital bills"
+            },
+            {
+                "name": "Orphan Children",
+                "icon": "👶",
+                "allocation": "35%",
+                "help_type": "Education, food, shelter, clothing"
+            },
+            {
+                "name": "Poor Students",
+                "icon": "📚",
+                "allocation": "25%",
+                "help_type": "School fees, books, uniforms"
+            }
+        ],
+        
+        "transparency": {
+            "public_reports": True,
+            "digital_signature": True,
+            "audit_trail": True,
+            "verification_key": SULTAN_MASTER_SIGNATURE["verification_key"]
+        },
+        
+        "how_to_contribute": [
+            "Use the app - 2% automatically donated",
+            "Direct donation via UPI",
+            "Become a Gyan Teacher - portion goes to charity",
+            "Share the app - grow the mission"
+        ],
+        
+        "founder_message": "Mera sapna hai ki is app se itna paisa jama ho ki koi cancer patient ilaj ke liye tadpe nahi, koi orphan bhookha na soye. - Sultan (Arif Ullah)",
+        
+        "last_updated": now.isoformat()
+    }
+
+@api_router.get("/gyan-mind/welcome")
+async def get_gyan_mind_welcome():
+    """
+    Gyan Mind Trigger Welcome Message
+    """
+    return {
+        "success": True,
+        "welcome": {
+            "title": "🧠 GYAN MIND TRIGGER",
+            "subtitle": "Muqaddas Technology Presents",
+            "message": "Gyan Mind Trigger mein aapka swagat hai - Duniya badalne ki shuruat yahan se hoti hai!",
+            "tagline": "Gyaan se Aay, Apne Sapne Sajaye!"
+        },
+        "features": [
+            {"icon": "🧠", "name": "Gyan Mind Trigger", "description": "Koi bhi sawaal poochho - instant jawab"},
+            {"icon": "🎮", "name": "Gyan Yuddh", "description": "Quiz khelo, prizes jeeto"},
+            {"icon": "💰", "name": "Earn System", "description": "Padho aur kamao"},
+            {"icon": "💚", "name": "Charity", "description": "Har transaction se seva"}
+        ],
+        "cta": {
+            "text": "Gyan Button Dabao",
+            "action": "open_gyan_mind"
+        },
+        "branding": {
+            "symbol": "💚",
+            "company": "Muqaddas Technology",
+            "seal": SULTAN_MASTER_SIGNATURE["verification_key"]
+        }
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
