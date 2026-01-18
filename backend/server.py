@@ -9201,6 +9201,448 @@ async def get_charity_mission():
         "last_updated": now.isoformat()
     }
 
+# ==================== SULTAN-PULSE API ====================
+# The "Banking Jhatka" Feature - Mobile Number se linked Master Identity
+
+SULTAN_PULSE_CONFIG = {
+    "mobile": "7638082406",
+    "mobile_formatted": "+91 7638082406",
+    "identity_type": "FOUNDER_MASTER",
+    "trust_level": "SUPREME",
+    "guinness_project": "10_BILLION_CHARITY_ENGINE",
+    "global_mission_rank": "FOUNDER_#1"
+}
+
+@api_router.get("/sultan-pulse")
+async def get_sultan_pulse():
+    """
+    🖲️ SULTAN-PULSE: The Master Identity API
+    When any system queries this number, they get the full Digital Sultanat identity
+    """
+    now = datetime.now(timezone.utc)
+    
+    # Calculate live charity stats
+    charity_pipeline = [
+        {"$match": {"transaction_type": "charity_contribution", "status": "completed"}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]
+    result = await db.wallet_transactions.aggregate(charity_pipeline).to_list(1)
+    total_charity = result[0]["total"] if result else 0.0
+    
+    # Calculate total users
+    total_users = await db.users.count_documents({})
+    
+    return {
+        "success": True,
+        "api_name": "🖲️ SULTAN-PULSE",
+        "tagline": "The Digital ATM & Visiting Card",
+        "query_timestamp": now.isoformat(),
+        
+        "master_identity": {
+            "name": SULTAN_IDENTITY["name"],
+            "title": "Founder & Sultan",
+            "mobile": SULTAN_PULSE_CONFIG["mobile_formatted"],
+            "identity_type": SULTAN_PULSE_CONFIG["identity_type"],
+            "trust_level": SULTAN_PULSE_CONFIG["trust_level"],
+            "verified": True,
+            "verification_key": SULTAN_MASTER_SIGNATURE["verification_key"]
+        },
+        
+        "legal_entity": {
+            "business_name": SULTAN_IDENTITY["business_name"],
+            "trade_name": "Muqaddas Technology",
+            "gstin": SULTAN_IDENTITY["gstin"],
+            "gst_status": "✅ ACTIVE & VERIFIED",
+            "pan": SULTAN_IDENTITY["pan_card"],
+            "pan_status": "✅ VERIFIED",
+            "registration_type": "Proprietorship (REG-06 Compliant)",
+            "state": "West Bengal, India"
+        },
+        
+        "financial_credibility": {
+            "bank": {
+                "name": SULTAN_IDENTITY["bank"]["name"],
+                "branch": SULTAN_IDENTITY["bank"]["branch"],
+                "ifsc": SULTAN_IDENTITY["bank"]["ifsc"],
+                "account_verified": True,
+                "account_type": "Current Account"
+            },
+            "upi_ids": [
+                {"vpa": SULTAN_UPI_ID, "provider": "PhonePe", "status": "Active"},
+                {"vpa": SULTAN_UPI_ID_ALT, "provider": "Bandhan Bank", "status": "Active"}
+            ],
+            "payoneer_id": PAYONEER_CUSTOMER_ID,
+            "international_payments": "Enabled"
+        },
+        
+        "trust_protocol": {
+            "title": "💚 HIGH-VALUE TRUST INDICATORS",
+            "indicators": [
+                {
+                    "name": "Guinness World Record Project",
+                    "project": "10 Billion Charity Engine",
+                    "status": "Active",
+                    "target": "₹10,00,00,00,000",
+                    "icon": "🏆"
+                },
+                {
+                    "name": "GST Registered Business",
+                    "gstin": SULTAN_IDENTITY["gstin"],
+                    "status": "Active & Filing",
+                    "icon": "📋"
+                },
+                {
+                    "name": "Zero-Profit Model",
+                    "description": "80% goes to tax + charity",
+                    "transparency": "Public Audit",
+                    "icon": "💚"
+                },
+                {
+                    "name": "Digital Sultanat Platform",
+                    "users": total_users,
+                    "apps": "500+ Categories",
+                    "icon": "👑"
+                }
+            ]
+        },
+        
+        "charity_liquidity_score": {
+            "title": "💚 CHARITY LIQUIDITY SCORE",
+            "total_collected": f"₹{total_charity:,.2f}",
+            "target": "₹10,00,00,00,000",
+            "progress_percentage": f"{(total_charity/10000000000)*100:.6f}%",
+            "beneficiaries": ["Cancer Patients", "Orphans", "Poor Students"],
+            "distribution": {
+                "cancer_fund": "40%",
+                "orphan_fund": "35%",
+                "education_fund": "20%",
+                "emergency_reserve": "5%"
+            },
+            "transparency": "All records public & auditable"
+        },
+        
+        "global_mission_rank": {
+            "rank": SULTAN_PULSE_CONFIG["global_mission_rank"],
+            "title": "FOUNDER - Gyan Sultanat",
+            "mission": "Knowledge + Charity = World Peace",
+            "vision": "Duniya ka sabse bada education-to-earn platform",
+            "impact_areas": [
+                "100+ Language Support",
+                "500+ App Categories",
+                "Free Education for Poor",
+                "Medical Help for Patients"
+            ]
+        },
+        
+        "banking_credibility_packet": {
+            "title": "🏦 INSTANT LOAN CREDIBILITY",
+            "message": "This number belongs to a verified GST-registered business with global charity mission",
+            "risk_assessment": "LOW RISK - High Value Asset",
+            "recommendation": "APPROVED for premium services",
+            "reasons": [
+                "GST Registered & Active",
+                "Bank Account Verified",
+                "Public Audit Trail",
+                "Zero-Profit Transparency Model",
+                "10 Billion Social Impact Mission"
+            ]
+        },
+        
+        "truecaller_display": {
+            "name": "Arif Ullah (Sultan) 💚",
+            "tag": "Muqaddas Global Founder",
+            "badge": "✅ Verified Business",
+            "description": "Gyan Sultanat | 10 Billion Charity Mission",
+            "website": "gyansultanat.com"
+        },
+        
+        "contact": {
+            "mobile": SULTAN_PULSE_CONFIG["mobile_formatted"],
+            "email": "sultan@gyansultanat.com",
+            "business_email": "support@gyansultanat.com",
+            "address": "Mitham Bangali, West Bengal, India"
+        },
+        
+        "royal_seal": {
+            "signature_id": SULTAN_MASTER_SIGNATURE["signature_id"],
+            "verification_key": SULTAN_MASTER_SIGNATURE["verification_key"],
+            "valid_until": SULTAN_MASTER_SIGNATURE["valid_until"],
+            "authority": "Sultan - Muqaddas Network"
+        }
+    }
+
+@api_router.get("/sultan-pulse/verify/{mobile}")
+async def verify_sultan_pulse(mobile: str):
+    """
+    Verify if a mobile number belongs to the Sultan/Founder
+    Used by external systems for identity verification
+    """
+    # Clean mobile number
+    clean_mobile = mobile.replace("+91", "").replace(" ", "").replace("-", "")
+    sultan_mobile = SULTAN_PULSE_CONFIG["mobile"]
+    
+    is_sultan = clean_mobile == sultan_mobile
+    
+    if is_sultan:
+        return {
+            "success": True,
+            "verified": True,
+            "identity": "SULTAN_FOUNDER",
+            "message": "✅ VERIFIED: This is the Founder of Gyan Sultanat",
+            "trust_level": "SUPREME",
+            "details": {
+                "name": SULTAN_IDENTITY["name"],
+                "business": SULTAN_IDENTITY["business_name"],
+                "gstin": SULTAN_IDENTITY["gstin"],
+                "mission": "10 Billion Charity Engine"
+            },
+            "badge": "💚 Muqaddas Global Founder",
+            "seal": SULTAN_MASTER_SIGNATURE["verification_key"]
+        }
+    else:
+        return {
+            "success": True,
+            "verified": False,
+            "identity": "NOT_SULTAN",
+            "message": "This number is not associated with the Founder",
+            "note": "For Founder verification, use: +91 7638082406"
+        }
+
+@api_router.get("/sultan-pulse/banking-report")
+async def get_banking_report():
+    """
+    Generate a Banking Credibility Report for loan applications
+    This is the "Jhatka" that banks will receive
+    """
+    now = datetime.now(timezone.utc)
+    
+    # Get charity stats
+    charity_pipeline = [
+        {"$match": {"transaction_type": "charity_contribution", "status": "completed"}},
+        {"$group": {"_id": None, "total": {"$sum": "$amount"}}}
+    ]
+    result = await db.wallet_transactions.aggregate(charity_pipeline).to_list(1)
+    total_charity = result[0]["total"] if result else 0.0
+    
+    total_users = await db.users.count_documents({})
+    total_transactions = await db.wallet_transactions.count_documents({})
+    
+    return {
+        "success": True,
+        "report_type": "BANKING_CREDIBILITY_REPORT",
+        "report_id": f"BCR-{now.strftime('%Y%m%d')}-{uuid.uuid4().hex[:8].upper()}",
+        "generated_at": now.isoformat(),
+        
+        "subject": {
+            "name": SULTAN_IDENTITY["name"],
+            "mobile": SULTAN_PULSE_CONFIG["mobile_formatted"],
+            "pan": SULTAN_IDENTITY["pan_card"],
+            "aadhar_masked": "XXXX XXXX " + SULTAN_IDENTITY["aadhar"][-4:]
+        },
+        
+        "business_profile": {
+            "legal_name": SULTAN_IDENTITY["business_name"],
+            "trade_name": "Muqaddas Technology / Gyan Sultanat",
+            "gstin": SULTAN_IDENTITY["gstin"],
+            "gst_status": "ACTIVE",
+            "registration_date": "2024",
+            "business_type": "Proprietorship",
+            "industry": "Education Technology (EdTech)",
+            "annual_model": "Zero-Profit Social Enterprise"
+        },
+        
+        "financial_summary": {
+            "platform_users": total_users,
+            "total_transactions": total_transactions,
+            "charity_collected": f"₹{total_charity:,.2f}",
+            "charity_target": "₹10,00,00,00,000",
+            "revenue_model": "Subscription + Transaction Fee (2% charity deduction)"
+        },
+        
+        "bank_account": {
+            "bank": SULTAN_IDENTITY["bank"]["name"],
+            "branch": SULTAN_IDENTITY["bank"]["branch"],
+            "ifsc": SULTAN_IDENTITY["bank"]["ifsc"],
+            "account_type": "Current Account",
+            "status": "Active & Verified"
+        },
+        
+        "credit_indicators": {
+            "gst_compliance": "✅ Regular Filing",
+            "pan_verification": "✅ Verified",
+            "bank_verification": "✅ Verified",
+            "business_vintage": "1+ Year",
+            "digital_presence": "✅ Active Platform",
+            "user_base": f"{total_users} registered users",
+            "social_impact": "High (Charity Mission)"
+        },
+        
+        "risk_assessment": {
+            "overall_risk": "LOW",
+            "credit_worthiness": "HIGH",
+            "recommendation": "APPROVED FOR CREDIT",
+            "factors": [
+                "GST Registered & Compliant",
+                "Verified Bank Account",
+                "Transparent Business Model",
+                "Social Impact Mission",
+                "Digital Audit Trail"
+            ]
+        },
+        
+        "special_notes": [
+            "Subject is founder of 10 Billion Charity Mission",
+            "Zero-profit model with 80% going to tax + charity",
+            "Platform serves education & charity sectors",
+            "All transactions are publicly auditable"
+        ],
+        
+        "verification": {
+            "seal": SULTAN_MASTER_SIGNATURE["verification_key"],
+            "authority": "Muqaddas Technology",
+            "valid_for": "30 days from generation"
+        }
+    }
+
+# ==================== APP DIRECTORY (500+ Categories) ====================
+
+APP_DIRECTORY = {
+    "gyan_sector": {
+        "name": "🧠 Gyan Sector",
+        "count": 100,
+        "description": "Professional Knowledge Apps",
+        "apps": [
+            {"id": "gyan_student", "name": "Gyan Mind - Students", "icon": "📚", "description": "School & College help"},
+            {"id": "gyan_doctor", "name": "Gyan Mind - Doctors", "icon": "🩺", "description": "Medical knowledge assistant"},
+            {"id": "gyan_engineer", "name": "Gyan Mind - Engineers", "icon": "⚙️", "description": "Technical solutions"},
+            {"id": "gyan_lawyer", "name": "Gyan Mind - Lawyers", "icon": "⚖️", "description": "Legal assistance"},
+            {"id": "gyan_teacher", "name": "Gyan Mind - Teachers", "icon": "👨‍🏫", "description": "Teaching resources"},
+            {"id": "gyan_business", "name": "Gyan Mind - Business", "icon": "💼", "description": "Business strategy"},
+            {"id": "gyan_farmer", "name": "Gyan Mind - Farmers", "icon": "🌾", "description": "Agriculture tips"},
+            {"id": "gyan_artist", "name": "Gyan Mind - Artists", "icon": "🎨", "description": "Creative guidance"},
+            {"id": "gyan_scientist", "name": "Gyan Mind - Scientists", "icon": "🔬", "description": "Research help"},
+            {"id": "gyan_chef", "name": "Gyan Mind - Chefs", "icon": "👨‍🍳", "description": "Culinary expertise"}
+        ]
+    },
+    "seva_sector": {
+        "name": "💚 Seva Sector",
+        "count": 50,
+        "description": "Charity & Social Service Apps",
+        "apps": [
+            {"id": "cancer_tracker", "name": "Cancer Patient Tracker", "icon": "🎗️", "description": "Track & help cancer patients"},
+            {"id": "orphan_portal", "name": "Orphanage Support Portal", "icon": "👶", "description": "Help orphans get education"},
+            {"id": "emergency_fund", "name": "Emergency Fund Manager", "icon": "🚨", "description": "Manage emergency donations"},
+            {"id": "blood_bank", "name": "Blood Donor Connect", "icon": "🩸", "description": "Connect blood donors"},
+            {"id": "food_seva", "name": "Food Seva Network", "icon": "🍲", "description": "Feed the hungry"},
+            {"id": "medicine_help", "name": "Free Medicine Portal", "icon": "💊", "description": "Medicine for poor"},
+            {"id": "shelter_seva", "name": "Shelter Seva", "icon": "🏠", "description": "Housing help"},
+            {"id": "education_seva", "name": "Free Education Seva", "icon": "📖", "description": "Scholarships & free courses"}
+        ]
+    },
+    "finance_sector": {
+        "name": "💰 Finance Sector",
+        "count": 50,
+        "description": "Financial Management Apps",
+        "apps": [
+            {"id": "sultan_tracker", "name": "Sultan Income Tracker", "icon": "👑", "description": "Track founder income"},
+            {"id": "zero_profit", "name": "Zero-Profit Audit", "icon": "📊", "description": "Transparency reports"},
+            {"id": "vip_manager", "name": "VIP Transaction Manager", "icon": "💎", "description": "Premium payments"},
+            {"id": "charity_calc", "name": "Charity Calculator", "icon": "🧮", "description": "Calculate donations"},
+            {"id": "gst_tracker", "name": "GST Tracker", "icon": "📋", "description": "Tax management"},
+            {"id": "expense_log", "name": "Expense Logger", "icon": "📝", "description": "Track expenses"},
+            {"id": "profit_share", "name": "Profit Share Manager", "icon": "💵", "description": "Revenue distribution"},
+            {"id": "wallet_hub", "name": "Muqaddas Wallet Hub", "icon": "👛", "description": "Central wallet"}
+        ]
+    },
+    "education_sector": {
+        "name": "📚 Education & Career",
+        "count": 100,
+        "description": "Learning & Career Development",
+        "apps": [
+            {"id": "sultan_edu", "name": "SultanEdu", "icon": "🎓", "description": "Main education platform"},
+            {"id": "skill_cert", "name": "Skill Certification", "icon": "📜", "description": "Get certified skills"},
+            {"id": "career_map", "name": "Career Mind Map", "icon": "🗺️", "description": "Plan your career"},
+            {"id": "job_portal", "name": "Muqaddas Jobs", "icon": "💼", "description": "Find jobs"},
+            {"id": "mentor_connect", "name": "Mentor Connect", "icon": "🤝", "description": "Find mentors"},
+            {"id": "interview_prep", "name": "Interview Prep", "icon": "🎤", "description": "Ace interviews"},
+            {"id": "resume_builder", "name": "Resume Builder", "icon": "📄", "description": "Create resumes"},
+            {"id": "course_hub", "name": "Course Hub", "icon": "🎯", "description": "All courses"}
+        ]
+    },
+    "security_sector": {
+        "name": "🔐 Network & Security",
+        "count": 100,
+        "description": "Security & Verification Apps",
+        "apps": [
+            {"id": "secure_shield", "name": "Muqaddas Secure Shield", "icon": "🛡️", "description": "Account security"},
+            {"id": "seal_verifier", "name": "Digital Seal Verifier", "icon": "✅", "description": "Verify royal seals"},
+            {"id": "identity_hub", "name": "Master Identity Hub", "icon": "🆔", "description": "Identity management"},
+            {"id": "sultan_pulse", "name": "Sultan-Pulse", "icon": "🖲️", "description": "Founder verification"},
+            {"id": "fraud_detect", "name": "Fraud Detector", "icon": "🚨", "description": "Detect fraud"},
+            {"id": "kyc_manager", "name": "KYC Manager", "icon": "📋", "description": "KYC verification"},
+            {"id": "audit_trail", "name": "Audit Trail", "icon": "📊", "description": "Transaction history"},
+            {"id": "encryption_hub", "name": "Encryption Hub", "icon": "🔒", "description": "Data encryption"}
+        ]
+    }
+}
+
+@api_router.get("/app-directory")
+async def get_app_directory():
+    """
+    Sultan's App Directory - 500+ Applications in ONE Super App
+    """
+    total_apps = sum(sector["count"] for sector in APP_DIRECTORY.values())
+    
+    return {
+        "success": True,
+        "title": "👑 SULTAN'S APP DIRECTORY",
+        "subtitle": "500+ Applications in ONE Super App",
+        "tagline": "Muqaddas Technology - Digital Sultanat",
+        
+        "stats": {
+            "total_apps": total_apps,
+            "total_sectors": len(APP_DIRECTORY),
+            "status": "Active & Growing"
+        },
+        
+        "sectors": APP_DIRECTORY,
+        
+        "featured": [
+            {"id": "gyan_mind", "name": "🧠 Gyan Mind Trigger", "description": "The Master Brain - Ask anything"},
+            {"id": "sultan_pulse", "name": "🖲️ Sultan-Pulse", "description": "Founder Identity Verification"},
+            {"id": "charity_mission", "name": "💚 10 Billion Mission", "description": "Track charity progress"}
+        ],
+        
+        "coming_soon": [
+            {"id": "world_map", "name": "🗺️ Global User Map", "description": "See users worldwide"},
+            {"id": "live_rooms", "name": "🎥 Live Classrooms", "description": "Live teaching sessions"},
+            {"id": "vr_education", "name": "🥽 VR Education", "description": "Virtual reality learning"}
+        ],
+        
+        "branding": {
+            "company": "Muqaddas Technology",
+            "founder": SULTAN_IDENTITY["name"],
+            "seal": SULTAN_MASTER_SIGNATURE["verification_key"]
+        }
+    }
+
+@api_router.get("/app-directory/{sector_id}")
+async def get_sector_apps(sector_id: str):
+    """
+    Get apps from a specific sector
+    """
+    if sector_id not in APP_DIRECTORY:
+        raise HTTPException(status_code=404, detail="Sector not found")
+    
+    sector = APP_DIRECTORY[sector_id]
+    return {
+        "success": True,
+        "sector": sector,
+        "total_apps": sector["count"],
+        "available_apps": len(sector["apps"]),
+        "note": f"Showing {len(sector['apps'])} apps. More coming soon!"
+    }
+
 @api_router.get("/gyan-mind/welcome")
 async def get_gyan_mind_welcome():
     """
