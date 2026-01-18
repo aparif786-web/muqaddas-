@@ -46,11 +46,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="gyan-guru"
+        name="gyan-mind"
         options={{
-          title: 'Gyan Guru',
+          title: 'Gyan Mind',
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="school" size={22} color={color} />
+            <Ionicons name="bulb" size={22} color={color} />
           ),
         }}
       />
