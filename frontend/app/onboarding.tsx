@@ -108,7 +108,7 @@ export default function OnboardingScreen() {
       }),
     ]).start();
 
-    // Show AI message after delay
+    // Show Gyan message after delay
     const timer = setTimeout(() => {
       setShowGyanMessage(true);
     }, 800);
