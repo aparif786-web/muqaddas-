@@ -9673,6 +9673,341 @@ async def get_gyan_mind_welcome():
         }
     }
 
+# ==================== 7 MASTER AGENTS FRAMEWORK ====================
+# Commanders of Gyan Sultanat - v1.1 Ready
+
+MASTER_AGENTS = {
+    "niyati": {
+        "id": "legal_agent",
+        "name": "🔐 Niyati (Legal Agent)",
+        "hindi_name": "नियति",
+        "role": "Legal & Fraud Detection",
+        "description": "Har registration aur agreement check karta hai. Fraud ko Blacklist karta hai.",
+        "status": "active",
+        "powers": ["fraud_detection", "blacklist_users", "verify_documents", "legal_alerts"],
+        "icon": "⚖️"
+    },
+    "kosh": {
+        "id": "finance_agent", 
+        "name": "💰 Kosh (Finance Agent)",
+        "hindi_name": "कोष",
+        "role": "Payouts & Financial Management",
+        "description": "Sultan-Pulse se payouts manage karta hai. 90% donation tracking.",
+        "status": "active",
+        "powers": ["process_payouts", "track_donations", "minimum_5_dollar", "revenue_split"],
+        "icon": "💎"
+    },
+    "vaidya": {
+        "id": "health_agent",
+        "name": "🏥 Vaidya (Health Agent)", 
+        "hindi_name": "वैद्य",
+        "role": "Doctor-Patient Agreements",
+        "description": "Doctors aur patients ke digital agreements sign karwata hai.",
+        "status": "coming_soon",
+        "powers": ["digital_agreements", "health_verification", "consultation_tracking"],
+        "icon": "🩺"
+    },
+    "guru": {
+        "id": "gyan_agent",
+        "name": "📚 Guru (Gyan Agent)",
+        "hindi_name": "गुरु", 
+        "role": "Education & Recommendations",
+        "description": "100+ education apps manage karta hai. Personalized gyan recommend karta hai.",
+        "status": "active",
+        "powers": ["course_recommendation", "learning_path", "skill_assessment", "daily_missions"],
+        "icon": "🧠"
+    },
+    "rakshak": {
+        "id": "security_agent",
+        "name": "🛡️ Rakshak (Security Agent)",
+        "hindi_name": "रक्षक",
+        "role": "VIP Security & Ban System",
+        "description": "VIP Ban/Unban aur 1% Friend's Security ki hifazat karta hai.",
+        "status": "active", 
+        "powers": ["vip_management", "ban_unban", "friends_vault", "security_alerts"],
+        "icon": "🔒"
+    },
+    "vyapaari": {
+        "id": "market_agent",
+        "name": "📊 Vyapaari (Market Agent)",
+        "hindi_name": "व्यापारी",
+        "role": "Equity & Revenue Tracking",
+        "description": "10% Equity sales aur 70/30 gift split ka hisaab rakhta hai.",
+        "status": "active",
+        "powers": ["equity_tracking", "gift_split", "market_analytics", "revenue_reports"],
+        "icon": "📈"
+    },
+    "seva": {
+        "id": "charity_agent",
+        "name": "💚 Seva (Charity Agent)",
+        "hindi_name": "सेवा",
+        "role": "Charity Fund Management", 
+        "description": "Cancer relief aur Orphanage funds ka live status update karta hai.",
+        "status": "active",
+        "powers": ["charity_tracking", "fund_distribution", "beneficiary_reports", "impact_metrics"],
+        "icon": "🙏"
+    }
+}
+
+@api_router.get("/master-agents")
+async def get_master_agents():
+    """
+    🤖 7 Master Agents - Commanders of Gyan Sultanat
+    """
+    return {
+        "success": True,
+        "title": "🤖 THE 7 MASTER AGENTS",
+        "subtitle": "Commanders of Gyan Sultanat",
+        "tagline": "Sultan-Pulse se Connected | 24/7 Active",
+        "total_agents": len(MASTER_AGENTS),
+        "agents": MASTER_AGENTS,
+        "master_control": {
+            "access": "Sultan Only",
+            "key": SULTAN_PULSE_CONFIG["mobile"],
+            "console": "Master Console via Sultan-Pulse"
+        },
+        "version": "1.0 (Framework Ready)",
+        "next_update": "v1.1 - AI Avatars & Voice Profiles"
+    }
+
+@api_router.get("/master-agents/{agent_id}")
+async def get_agent_details(agent_id: str):
+    """
+    Get specific Master Agent details
+    """
+    if agent_id not in MASTER_AGENTS:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    
+    agent = MASTER_AGENTS[agent_id]
+    return {
+        "success": True,
+        "agent": agent,
+        "sultan_pulse_connected": True,
+        "commands_available": agent["powers"]
+    }
+
+# ==================== CREATOR ONBOARDING SYSTEM ====================
+# Attract and Reward High-Quality Content Creators
+
+CREATOR_TIERS = {
+    "bronze": {"min_followers": 0, "revenue_share": 60, "badge": "🥉", "perks": ["basic_analytics"]},
+    "silver": {"min_followers": 1000, "revenue_share": 65, "badge": "🥈", "perks": ["priority_support", "featured_listing"]},
+    "gold": {"min_followers": 10000, "revenue_share": 70, "badge": "🥇", "perks": ["verified_badge", "instant_payout", "promotion"]},
+    "platinum": {"min_followers": 100000, "revenue_share": 75, "badge": "💎", "perks": ["vip_access", "dedicated_manager", "top_placement"]},
+    "sultan": {"min_followers": 1000000, "revenue_share": 80, "badge": "👑", "perks": ["all_perks", "equity_option", "brand_partnership"]}
+}
+
+@api_router.get("/creator/onboarding")
+async def get_creator_onboarding():
+    """
+    🎬 Creator Onboarding - Attract High-Quality Gyan Creators
+    """
+    return {
+        "success": True,
+        "title": "🎬 BECOME A GYAN CREATOR",
+        "subtitle": "Teach, Earn & Impact Millions",
+        "tagline": "No Ads. No Wait. Instant Rewards.",
+        
+        "why_join": {
+            "headline": "Why YouTube Creators Choose Gyan Sultanat",
+            "reasons": [
+                {"icon": "💰", "title": "70-80% Revenue Share", "desc": "YouTube deta hai 55%, hum dete hain 70-80%!"},
+                {"icon": "⚡", "title": "Instant $5 Payout", "desc": "Minimum $5 pe turant withdrawal - koi waiting nahi"},
+                {"icon": "✅", "title": "Verified Badge", "desc": "Quality content = Instant verification"},
+                {"icon": "🎯", "title": "Daily Missions", "desc": "Complete missions, earn bonus rewards"},
+                {"icon": "💚", "title": "Charity Impact", "desc": "Aapka content cancer patients ki madad karta hai"},
+                {"icon": "🌍", "title": "100+ Languages", "desc": "Global audience tak pahuncho"}
+            ]
+        },
+        
+        "tiers": CREATOR_TIERS,
+        
+        "onboarding_steps": [
+            {"step": 1, "title": "Sign Up", "desc": "Google se 1-click registration", "time": "30 sec"},
+            {"step": 2, "title": "Profile Setup", "desc": "Apna expertise batao", "time": "2 min"},
+            {"step": 3, "title": "First Content", "desc": "Pehla gyan video/course upload karo", "time": "10 min"},
+            {"step": 4, "title": "Get Verified", "desc": "Quality check ke baad badge milega", "time": "24 hrs"},
+            {"step": 5, "title": "Start Earning", "desc": "Har view, har sale pe kamao", "time": "Instant"}
+        ],
+        
+        "reward_jhatka": {
+            "title": "🎁 CREATOR REWARD JHATKA",
+            "offers": [
+                {"name": "Welcome Bonus", "value": "₹500", "condition": "First 100 creators"},
+                {"name": "Referral Bonus", "value": "₹100/creator", "condition": "Bring other creators"},
+                {"name": "Milestone Bonus", "value": "₹5000", "condition": "10,000 students taught"},
+                {"name": "Charity Champion", "value": "Special Badge", "condition": "₹10,000 charity generated"}
+            ]
+        },
+        
+        "daily_missions": {
+            "title": "📋 DAILY MISSIONS (Earn Extra)",
+            "missions": [
+                {"id": "upload", "task": "Upload 1 video/lesson", "reward": "₹50", "xp": 100},
+                {"id": "engage", "task": "Reply to 5 student questions", "reward": "₹25", "xp": 50},
+                {"id": "share", "task": "Share content on social media", "reward": "₹10", "xp": 25},
+                {"id": "streak", "task": "7-day upload streak", "reward": "₹500", "xp": 500}
+            ]
+        },
+        
+        "success_stories": [
+            {"name": "Rahul Teacher", "subject": "Mathematics", "earnings": "₹2.5L/month", "students": "50,000+"},
+            {"name": "Priya Ma'am", "subject": "English", "earnings": "₹1.8L/month", "students": "35,000+"},
+            {"name": "Amit Sir", "subject": "Science", "earnings": "₹3L/month", "students": "75,000+"}
+        ],
+        
+        "cta": {
+            "primary": "Start Creating Now",
+            "secondary": "Calculate Your Earnings",
+            "action": "open_creator_registration"
+        },
+        
+        "support": {
+            "whatsapp": "+91 7638082406",
+            "email": "creators@gyansultanat.com"
+        }
+    }
+
+@api_router.post("/creator/register")
+async def register_creator(request: Request):
+    """
+    Register as a Gyan Creator
+    """
+    try:
+        data = await request.json()
+        user_id = data.get("user_id")
+        expertise = data.get("expertise", [])
+        social_links = data.get("social_links", {})
+        
+        if not user_id:
+            raise HTTPException(status_code=400, detail="User ID required")
+        
+        # Create creator profile
+        creator_profile = {
+            "user_id": user_id,
+            "expertise": expertise,
+            "social_links": social_links,
+            "tier": "bronze",
+            "revenue_share": 60,
+            "verified": False,
+            "badge": "🥉",
+            "total_earnings": 0,
+            "total_students": 0,
+            "courses_created": 0,
+            "daily_missions_completed": 0,
+            "joined_at": datetime.now(timezone.utc),
+            "status": "pending_review"
+        }
+        
+        await db.creators.update_one(
+            {"user_id": user_id},
+            {"$set": creator_profile},
+            upsert=True
+        )
+        
+        return {
+            "success": True,
+            "message": "🎉 Welcome to Gyan Sultanat Creator Program!",
+            "creator_id": user_id,
+            "tier": "bronze",
+            "badge": "🥉",
+            "next_steps": [
+                "Complete your profile",
+                "Upload your first content",
+                "Get verified within 24 hours"
+            ],
+            "welcome_bonus": "₹500 (credited after first upload)"
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@api_router.get("/creator/earnings-calculator")
+async def calculate_creator_earnings(
+    monthly_views: int = 10000,
+    course_price: int = 499,
+    students_per_month: int = 100
+):
+    """
+    Calculate potential creator earnings
+    """
+    # Revenue calculations
+    view_revenue = monthly_views * 0.01  # ₹0.01 per view
+    course_revenue = course_price * students_per_month * 0.70  # 70% share
+    total_monthly = view_revenue + course_revenue
+    charity_contribution = total_monthly * 0.02  # 2% to charity
+    
+    return {
+        "success": True,
+        "title": "💰 YOUR EARNING POTENTIAL",
+        "inputs": {
+            "monthly_views": monthly_views,
+            "course_price": f"₹{course_price}",
+            "students_per_month": students_per_month
+        },
+        "earnings": {
+            "from_views": f"₹{view_revenue:,.0f}",
+            "from_courses": f"₹{course_revenue:,.0f}",
+            "total_monthly": f"₹{total_monthly:,.0f}",
+            "total_yearly": f"₹{total_monthly * 12:,.0f}"
+        },
+        "charity_impact": {
+            "monthly_donation": f"₹{charity_contribution:,.0f}",
+            "yearly_donation": f"₹{charity_contribution * 12:,.0f}",
+            "message": "Aapka content cancer patients ki madad kar raha hai! 💚"
+        },
+        "comparison": {
+            "youtube_equivalent": f"₹{total_monthly * 0.55 / 0.70:,.0f}",
+            "gyan_sultanat": f"₹{total_monthly:,.0f}",
+            "extra_earnings": f"₹{total_monthly - (total_monthly * 0.55 / 0.70):,.0f}"
+        },
+        "tier_upgrade": {
+            "current": "Bronze (60% share)",
+            "next": "Silver at 1000 followers (65% share)",
+            "potential_increase": f"₹{total_monthly * 0.05:,.0f}/month extra"
+        }
+    }
+
+# ==================== VERSION & UPDATE INFO ====================
+
+@api_router.get("/app/version")
+async def get_app_version():
+    """
+    Get current app version and upcoming features
+    """
+    return {
+        "success": True,
+        "current_version": "1.0.0",
+        "version_name": "Sultan's Launch",
+        "release_date": "January 2026",
+        
+        "features_v1": [
+            "🧠 Gyan Mind Trigger",
+            "👑 App Directory (500+ Apps)",
+            "🖲️ Sultan-Pulse Identity",
+            "💚 10 Billion Charity Mission",
+            "🤖 7 Master Agents Framework",
+            "🎬 Creator Onboarding System"
+        ],
+        
+        "coming_in_v1_1": [
+            "🤖 AI Avatars for Master Agents",
+            "🎤 Voice Profiles (Sultan-Standard)",
+            "🗺️ Global User World Map",
+            "🎥 Live Classrooms",
+            "🎮 3D Gyan World Rankings"
+        ],
+        
+        "roadmap": {
+            "v1.1": "February 2026 - AI Agents & Live Features",
+            "v1.2": "March 2026 - VR Education Module",
+            "v2.0": "June 2026 - Global Expansion"
+        },
+        
+        "founder": SULTAN_IDENTITY["name"],
+        "company": "Muqaddas Technology",
+        "seal": SULTAN_MASTER_SIGNATURE["verification_key"]
+    }
+
 # Include the router in the main app
 app.include_router(api_router)
 
