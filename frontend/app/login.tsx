@@ -22,6 +22,15 @@ const { width } = Dimensions.get('window');
 export default function LoginScreen() {
   const { processSessionId } = useAuth();
 
+  const handleOpenLink = async (path: string) => {
+    try {
+      const url = `${BACKEND_URL}${path}`;
+      await WebBrowser.openBrowserAsync(url);
+    } catch (error) {
+      console.error('Error opening link:', error);
+    }
+  };
+
   const handleGoogleLogin = async () => {
     try {
       // Create redirect URL based on platform
