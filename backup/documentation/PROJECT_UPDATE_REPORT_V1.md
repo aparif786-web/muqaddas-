@@ -10,7 +10,7 @@
 
 | Service | URL |
 |---------|-----|
-| **Main App (Knowledge Hub)** | https://sultanat.preview.emergentagent.com/leaderboard |
+| **Main App (Knowledge Hub)** | https://sultan-pulse-demo.preview.emergentagent.com/leaderboard |
 | **Share Link** | https://app.emergent.sh/share?app=knowledge-hub-386 |
 
 ---

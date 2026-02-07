@@ -1,259 +1,177 @@
 <analysis>
 
-**original_problem_statement**: The user, Sultan, is building a world-class mobile application named **GYAN SULTANAT** (ज्ञान सल्तनत) with the tagline Jahan Gyan Raja Hai (Where Knowledge is King). The vision is to merge education, psychology, community, and charity. The project has a massive scope, detailed in multiple blueprint documents provided by the user.
+**original_problem_statement**: The user, Sultan, aims to launch his world-class mobile application, **GYAN SULTANAT**, on the Google Play Store. The app's vision is a grand fusion of education, psychology, community, and charity, rebranded from AI to Gyan. The immediate goal is to get a functional Android App Bundle (.aab) file and successfully submit it to the Play Store.
 
-**PRODUCT REQUIREMENTS (Latest additions):**
+Throughout the session, the user has continuously expanded the scope with numerous feature requests, which have been added to the backend. These include:
+- **Sultan-Pulse & App Directory:** A system to link the user's mobile number to a financial identity and a directory for over 500 apps (categories) within the main application.
+- **Master Agents & Gyan Club:** A framework for 7 Master Agents (Legal, Finance, etc.) and a hierarchical Gyan Club team structure to manage the ecosystem.
+- **Sovereign Kernel & Future-Proofing:** A vast collection of backend logic and placeholder services for future technologies like Gyan Voice, Gyan Chain, AR/VR, Holograms, and an offline Ghost Network.
+- **Rebranding:** All instances of AI and Gaming have been removed and replaced with Gyan Mind and Gyan Skill Arena, respectively. The winning percentage in skill challenges is capped at 45%.
 
-1.  **MHA Event & Rewards:** A system to reward top models or creators with crowns (Bronze, Silver, Gold) and a monthly video leaderboard with physical prizes (iPhone, Laptops) and coin rewards.
-2.  **Universal Partnership System:** An Education-to-Earn (E2E) model allowing any legal trust, NGO, or educational platform to partner, get a verified badge, host content, and receive a profit share. Users learn from these partners to gain Knowledge Points and become Certified Hosts.
-3.  **Talent Registration & AI Services:** An open registration system for professionals (teachers, doctors, lawyers) for a nominal fee (₹1). These talents can then offer their services and purchase optional AI assistance through a separate payment gateway.
-4.  **AI Teacher with Real LLM:** A core feature where an AI Teacher, powered by a real Large Language Model (like GPT-4o-mini), can answer user questions on any subject in over 100 languages. It should also guide users and explain advertisements educationally.
-5.  **AI Onboarding Guide:** A dedicated, automated AI guide for new users to explain the app's complex vision and features, as the user noted that people are not understanding the full scope.
-6.  **Pricing & Revenue Model:** A clear 70/30 revenue split for content creators and defined pricing models for various services to provide a clear value proposition to partners and companies.
-7.  **Final Goal:** Get a working APK built and published to the Google Play Store.
-
-**User's preferred language**: The user communicates in Hinglish (Hindi/English) and Bengali. The next agent **MUST** respond in the user's preferred language to maintain clear communication.
+**User's preferred language**: The user communicates in **Hinglish** and **Bengali**. The next agent **MUST** respond in the user's preferred language to maintain clear communication.
 
 **what currently exists?**
-The project is a full-stack Expo (React Native) and FastAPI application.
--   **Backend ():** The backend is now extremely feature-rich but has become a large monolith (nearly 6,500 lines). It includes the original APIs plus extensive new systems for **Crowns, Video Leaderboards, MHA Events, Universal Partnerships, Talent Registration, AI Services, and a comprehensive Pricing/Revenue model**. The **AI Teacher** functionality has been successfully connected to a real LLM (OpenAI GPT-4o-mini) using the Emergent LLM Key. All new endpoints have been tested via .
--   **Frontend ():** The UI has been updated with critical fixes: the Withdraw button has been moved from the home screen to a new Triple Wallet section within the Profile screen, and all Game terminology has been replaced with Gyan Yuddh. New placeholder screens have been created for , , and , and they are linked in the tab navigation. A new  screen was also created to guide new users. The app tagline has been updated to Gyaan se Aay, Apne Sapne Sajaye!.
+-   **Backend ():** The FastAPI backend has ballooned into a critically oversized monolith of over **13,300 lines**. It contains all the newly requested features as placeholder API endpoints (Sultan-Pulse, App Directory, Master Agents, Future Tech, etc.). The agent has scrubbed all AI and Gaming references and implemented a 45% winning cap. The core legal and About Us endpoints are functional.
+-   **Frontend ():** A basic  page has been created and added to the tab navigation. However, there is **no UI for over 95% of the new backend features**. The frontend is drastically behind the backend in terms of functionality.
+-   **Build Artifact:** A working Android App Bundle () has been successfully generated and is available for download from the Expo dashboard. This is the file to be used for the Play Store submission.
 
 **Last working item**:
--   Last item agent was working: The user gave the final go-ahead for the beta launch, prioritizing three main tasks. The agent was providing a step-by-step guide on how to publish to the Google Play Store, in response to the user's request. The next implementation step is to act on the user's priorities.
--   Status: **NOT STARTED**
--   Agent Testing Done: N/A
--   Which testing method agent to use? **Frontend testing agent** to conduct full application testing once an APK is successfully built.
--   User Testing Done: N
+-   Last item agent was working: Guiding the user through the final steps of the Google Play Console registration and payment process. The user was stuck on attaching a payment method to their developer account after making an initial payment.
+-   Status: **BLOCKED**
+-   Agent Testing Done: N/A (This is a user guidance task)
+-   Which testing method agent to use? N/A (Blocked on user action)
+-   User Testing Done: IN PROGRESS (User is actively trying to complete the process).
 
 **All Pending/In progress Issue list**:
--   **Issue 1: Critical APK Build Failure (P0 - BLOCKER)**
-    -   **Description:** The primary goal of generating a usable Android APK has failed repeatedly in past sessions. The user cannot test the application on a real device, which is the main blocker for the entire project. The previous agent implemented a vast number of new features but did not address this core issue, despite the user repeatedly asking for it to be the top priority.
-    -   **Attempted fixes (in previous forks):** Cleaned cache, reinstalled dependencies, ran env: load .env
-env: export EXPO_TUNNEL_SUBDOMAIN EXPO_PACKAGER_HOSTNAME EXPO_PUBLIC_BACKEND_URL EXPO_USE_FAST_RESOLVER METRO_CACHE_ROOT
-- Creating native directories (./ios and ./android)
-✔ Created native directories | reusing /android, /ios
-- Updating package.json
-✔ Updated package.json | no changes
-- Running prebuild
-✔ Finished prebuild, fixed config files. None resulted in a successful build.
+-   **Issue 1: Google Play Store Submission (P0 - BLOCKER)**
+    -   **Description:** The user needs to complete their Google Play Developer account registration by successfully attaching a payment method to pay the remaining fees. They have made some initial payments but are facing issues with the final account setup.
+    -   **Attempted fixes:** The agent has provided step-by-step guidance, links, and form-filling instructions. The user is actively working on it but needs to visit their bank.
     -   **Next debug checklist:**
-        1.  Run env: load .env
-env: export EXPO_TUNNEL_SUBDOMAIN EXPO_PACKAGER_HOSTNAME EXPO_PUBLIC_BACKEND_URL EXPO_USE_FAST_RESOLVER METRO_CACHE_ROOT
-Running 17 checks on your project...
-14/17 checks passed. 3 checks failed. Possible issues detected:
-Use the --verbose flag to see more details about passed checks.
+        1.  Wait for the user to confirm they have resolved the issue with their bank/card.
+        2.  Guide the user to re-attempt attaching the payment profile in the Google Play Console.
+        3.  Once the account is fully active, guide the user to upload the  file.
+        4.  Assist with filling out the store listing using the pre-created markdown files.
+    -   **Why fix this issue and what will be achieved with the fix?** This is the final step to achieve the user's primary goal: launching the app on the Google Play Store.
+    -   **Status:** BLOCKED (on user action)
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** N/A
+    -   **Blocked on other issue:** No.
 
-✖ Check for lock file
-Multiple lock files detected (yarn.lock, package-lock.json). This may result in unexpected behavior in CI environments, such as EAS Build, which infer the package manager from the lock file.
-Advice:
-Remove any lock files for package managers you are not using.
+-   **Issue 2: EAS Build Limit Reached (P1 - BLOCKER for new builds)**
+    -   **Description:** The Expo Free Tier build limit for the month has been reached. No new Android or iOS builds can be created until the limit resets (in ~12 days, according to the logs) or the user upgrades their Expo plan.
+    -   **Attempted fixes:** The agent identified the issue by reading the error log from a failed build attempt.
+    -   **Next debug checklist:**
+        1.  Clearly inform the user about this limitation.
+        2.  Emphasize that the **last successfully built  file MUST be used** for the current launch.
+        3.  Explain the options: wait for the reset or upgrade the Expo plan for future builds.
+    -   **Why fix this issue and what will be achieved with the fix?** Prevents wasted time trying to trigger new builds. Manages user expectations about future updates.
+    -   **Status:** NOT STARTED (Inform user)
+    -   **Is recurring issue?** N
+    -   **Should Test frontend/backend/both after fix?** N/A
+    -   **Blocked on other issue:** No.
 
-✖ Check for app config fields that may not be synced in a non-CNG project
-This project contains native project folders but also has native configuration properties in app.json, indicating it is configured to use Prebuild. When the android/ios folders are present, EAS Build will not sync the following properties: orientation, icon, scheme, userInterfaceStyle, ios, android, plugins. 
-
-
-✖ Check that packages match versions required by installed Expo SDK
-
-⚠️ Minor version mismatches
-package                expected  found  
-react-native-worklets  0.5.1     0.7.2  
-
-
-
-1 package out of date.
-Advice:
-Use 'npx expo install --check' to review and upgrade your dependencies.
-To ignore specific packages, add them to "expo.install.exclude" in package.json. Learn more: https://expo.fyi/dependency-validation to diagnose project health.
-        2.  Run env: load .env
-env: export EXPO_TUNNEL_SUBDOMAIN EXPO_PACKAGER_HOSTNAME EXPO_PUBLIC_BACKEND_URL EXPO_USE_FAST_RESOLVER METRO_CACHE_ROOT
-› It's recommended to commit all changes before proceeding in case you want to revert generated changes.
-- Clearing android, ios
-✔ Cleared android, ios code
-- Creating native directories (./ios and ./android)
-✔ Created native directories
-- Updating package.json
-✔ Updated package.json | no changes
-- Running prebuild
-✔ Finished prebuild
-- Installing CocoaPods...
-✔ Skipped installing CocoaPods because operating system is not on macOS. to ensure a clean native project generation.
-        3.  Scrutinize  for any dependency version conflicts.
-        4.  Attempt an EAS build with the  flag.
-        5.  Carefully examine the build logs from EAS for the specific error.
-        6.  If errors persist after 2 attempts, **use the ** to diagnose the complex build issue.
-    -   **Why fix this issue and what will be achieved with the fix?** This is the most critical issue. Fixing it will provide the user with a testable application, unblocking all future progress and user feedback.
-    -   **Status:** NOT STARTED
+-   **Issue 3: iOS Build Failure (P2)**
+    -   **Description:** An attempt to build for iOS failed. This is because a paid Apple Developer Account (9/year) is required, which has not been set up.
+    -   **Status:** BLOCKED (on user setting up Apple Developer account)
     -   **Is recurring issue?** Y
-    -   **Should Test frontend/backend/both after fix?** The generated APK needs to be tested.
-    -   **Blocked on other issue:** No, this issue is blocking everything else.
+    -   **Should Test frontend/backend/both after fix?** N/A
+    -   **Blocked on other issue:** Play Store Submission.
 
 **In progress Task List**:
--   None. The previous agent completed several small tasks in parallel.
+- There are no active development tasks in progress. The focus is entirely on unblocking the user for the Play Store submission.
 
 **Upcoming and Future Tasks**
--   **Upcoming Tasks (User's Final Priorities):**
-    *   **(P0) Generate APK Build:** Resolve **Issue 1** and provide a testable Android application to the user.
-    *   **(P1) Integrate Payment Gateway:** Implement Razorpay and UPI integration for all monetization features (Talent Registration Fee, AI Service Plans, etc.).
-    *   **(P2) Implement Live Rooms:** Add the audio/video room feature for live interactions and classes.
-    *   **(P3) Complete Frontend UI Implementation:** The following screens exist as placeholders and need to be fully developed with API integration:
-        *   : Build the chat interface.
-        *   : Build the UI to display multiple leaderboard categories.
-        *   : Build the registration form for professionals.
-        *   : Refine the AI-guided onboarding flow.
-        *   Crown Display UI (likely on the profile screen).
-
--   **Future Tasks (From PRD):**
-    *   Study Groups & Community Features.
-    *   Voice Assistant (Hey Sultan).
-    *   Offline Mode for educational content.
-    *   AR & Blockchain integration.
+-   **Upcoming Tasks:**
+    *   **(P0) Refactor :** This is an **URGENT** technical debt task. The file is over 13,300 lines and is unmaintainable. It must be broken down into multiple smaller routers (e.g., , , ). Propose this immediately after the app is submitted.
+    *   **(P1) Complete Frontend UI Implementation:** The frontend is a skeleton. UI needs to be built for the 150+ backend services, including the App Directory, Sultan-Pulse, Skill Arena, user profiles, and all Future Tech placeholders.
+-   **Future Tasks (From user requests):**
+    *   Implement Live Rooms for audio/video streaming.
+    *   Integrate a live Razorpay payment gateway.
+    *   Build out the 3D Virtual Sultanat and AR/VR features.
+    *   Flesh out the Master Agents with actual logic instead of placeholder responses.
 
 **Completed work in this session**
--   **Implemented MHA Event & Rewards System:** Added backend models and APIs for Crowns, Video Leaderboard, and MHA Events.
--   **Implemented Universal Partnership System:** Added backend for the Education-to-Earn model, allowing partners to apply and be managed.
--   **Implemented Talent Registration System:** Added backend for professionals (teachers, doctors) to register and subscribe to AI service plans.
--   **Integrated Real LLM with AI Teacher:** Connected the AI Teacher to GPT-4o-mini using the Emergent LLM Key and updated the prompt to support over 100 languages.
--   **Implemented Pricing & Revenue Model:** Added backend logic and an API to define revenue splits (e.g., 70% for creators).
--   **Created AI Onboarding Flow:** Created a new  screen and routed new users to it to explain the app's vision.
--   **Critical UI Fixes:**
-    -   Moved Withdraw button from Home screen to a Triple Wallet section in the Profile screen.
-    -   Replaced all Game references with Gyan Yuddh.
-    -   Updated the app tagline to Gyaan se Aay, Apne Sapne Sajaye!.
--   **Created Multiple Frontend Screens (Placeholders):**
-    -   
-    -   
-    -   
-    -   
+-   Successfully generated a final, working  file for the Google Play Store.
+-   Guided the user through most of the Google Play Console registration process.
+-   Implemented a vast number of new features as backend API endpoints in  based on user's Sovereign Kernel vision.
+-   Completely removed all instances of AI and Gaming from the codebase and API responses, replacing them with Gyan Mind and Gyan Skill Arena.
+-   Capped the winning percentage for skill challenges at 45% as per user's legal concerns.
+-   Fixed a backend  that was crashing the server.
+-   Finalized and tested the  and  endpoints.
+-   Created multiple marketing and store listing documents (, ).
 
 **Earlier issues found/mentioned but not fixed**
--   The **APK Build Failure** is the single most critical issue that was identified at the very beginning and remains unresolved.
+-   No issues were missed; the session's primary blocker shifted from AAB Build Failure (which was resolved) to Expo Build Limit Reached and User Payment Block.
 
 **Known issue recurrence from previous fork**
--   **Issue recurrence in previous fork:** APK Build Failures via EAS CLI.
+-   **Issue recurrence in previous fork:** AAB Build Failures.
 -   **Recurrence count:** High.
--   **Status:** NOT RESOLVED. This is the top priority for the next agent.
+-   **Status:** **RESOLVED** in this session. A working  was produced.
 
 **Code Architecture**
 
 
 **Key Technical Concepts**
--   **Backend:** FastAPI, Motor (async MongoDB), Pydantic, JWT, **OpenAI Python library**.
--   **Frontend:** React Native, Expo, Expo Router, TypeScript, .
+-   **Backend:** FastAPI, Motor, Pydantic, JWT.
+-   **Frontend:** React Native, Expo, Expo Router, TypeScript.
 -   **Database:** MongoDB.
--   **LLM:** OpenAI GPT-4o-mini via Emergent LLM Key.
+-   **Build System:** Expo Application Services (EAS) CLI.
 
 **key DB schema**
--   New Pydantic models added to  for: , , , , , , , , , .
+-   No new database collections were formally created, but dozens of new Pydantic models were defined inside  for the new API endpoints, implying a much larger and more complex data structure is expected.
 
 **changes in tech stack**
--   Added usage: openai [-h] [-v] [-b API_BASE] [-k API_KEY] [-p PROXY [PROXY ...]]
-              [-o ORGANIZATION] [-t {openai,azure}]
-              [--api-version API_VERSION] [--azure-endpoint AZURE_ENDPOINT]
-              [--azure-ad-token AZURE_AD_TOKEN] [-V]
-              {api,tools,migrate,grit} ...
-
-positional arguments:
-  {api,tools,migrate,grit}
-    api                 Direct API calls
-    tools               Client side tools for convenience
-
-options:
-  -h, --help            show this help message and exit
-  -v, --verbose         Set verbosity.
-  -b API_BASE, --api-base API_BASE
-                        What API base url to use.
-  -k API_KEY, --api-key API_KEY
-                        What API key to use.
-  -p PROXY [PROXY ...], --proxy PROXY [PROXY ...]
-                        What proxy to use.
-  -o ORGANIZATION, --organization ORGANIZATION
-                        Which organization to run as (will use your default
-                        organization if not specified)
-  -t {openai,azure}, --api-type {openai,azure}
-                        The backend API to call, must be `openai` or `azure`
-  --api-version API_VERSION
-                        The Azure API version, e.g.
-                        'https://learn.microsoft.com/en-us/azure/ai-
-                        services/openai/reference#rest-api-versioning'
-  --azure-endpoint AZURE_ENDPOINT
-                        The Azure endpoint, e.g.
-                        'https://endpoint.openai.azure.com'
-  --azure-ad-token AZURE_AD_TOKEN
-                        A token from Azure Active Directory,
-                        https://www.microsoft.com/en-
-                        us/security/business/identity-access/microsoft-entra-
-                        id
-  -V, --version         show program's version number and exit to the backend dependencies.
+-   No changes to the underlying stack, but the application logic has expanded exponentially.
 
 **All files of reference**
--   **/app/backend/server.py**: Critically important. Contains all backend logic and was massively expanded.
--   **/app/frontend/app/(tabs)/profile.tsx**: Updated with the new Triple Wallet section and Withdraw modal.
--   **/app/frontend/app/(tabs)/home.tsx**: Updated to remove the Withdraw button.
--   **/app/frontend/app/login.tsx**: Updated with new tagline and Gyan Yuddh terminology.
--   **/app/frontend/app/index.tsx**: Modified to route new users to .
--   **/app/frontend/app/onboarding.tsx**: New file for the AI onboarding guide.
--   **/app/frontend/app/(tabs)/ai-teacher.tsx**: New placeholder file.
--   **/app/frontend/app/(tabs)/leaderboard.tsx**: New placeholder file.
--   **/app/frontend/app/(tabs)/talent-register.tsx**: New placeholder file.
--   **/app/frontend/app/(tabs)/_layout.tsx**: Modified to add the new tabs.
+-   **/app/backend/server.py**: The most-edited file. Grew from ~8,800 to over 13,300 lines. Contains all new features.
+-   **/app/frontend/app/(tabs)/app-directory.tsx**: New file created for the Apps tab.
+-   **/app/frontend/app/(tabs)/_layout.tsx**: Modified to add the new Apps tab.
+-   **/app/frontend/eas.json**: Modified to configure build profiles.
+-   **/app/frontend/assets/playstore/**: New folder with multiple new markdown files for marketing.
 
 **Areas that need refactoring**:
--   ** is critically monolithic.** It has grown from ~4000 to ~6500 lines and urgently needs to be broken down into separate FastAPI routers (e.g., , ) to be maintainable.
+-   ** is the highest priority risk to the entire project.** Its size makes it nearly impossible to debug, maintain, or extend safely. It **MUST** be refactored into smaller, manageable FastAPI routers immediately after the initial launch.
 
 **key api endpoints**
--   : New endpoint connected to a real LLM for the AI Teacher.
--   : New endpoint for universal partner applications.
--   : New endpoint for professional talent registration.
--   : Endpoint to get the crown system configuration.
--   : Endpoint for the monthly video leaderboard.
--   : Endpoint to get defined revenue sharing models.
+-   Over 100 new endpoints have been added. Key new ones include:
+    -   
+    -   
+    -   
+    -   
+    -   
+    -   
+    -   All endpoints previously containing ai or api have been renamed.
 
 **Critical Info for New Agent**
--   **TOP PRIORITY IS THE APK BUILD.** The user has been asking for this from the start. Do not get distracted by adding new features. Follow the debug checklist for the build failure. Use the  if you get stuck.
--   The user's vision is vast, but he has provided a clear final priority list: 1) APK Build, 2) Payment Gateway, 3) Live Rooms. Stick to this order.
--   The backend is now far ahead of the frontend. Most of the new functionality only exists as APIs and needs UI implementation.
--   The Emergent LLM Key is  and is successfully integrated into the AI Teacher backend.
+-   **TOP PRIORITY:** Unblock the user on the Google Play Console payment issue. Do not start any new development. You are a guide.
+-   **MANAGE EXPECTATIONS:** The user believes all 200+ features are fully functional. You must be clear that only the backend services exist, and the frontend UI needs to be built.
+-   **BUILD LIMIT:** Immediately inform the user that no new builds are possible until the Expo plan is upgraded or the free limit resets. The existing  file **must** be used.
+-   **TECHNICAL DEBT:** The  file is a ticking time bomb. After the app is submitted, you must convince the user to prioritize a refactor before adding any more features.
 
 **documents created in this job**
--   None.
+-   
+-   
+-   
 
 **Last 10 User Messages and any pending HUMAN messages**
-10. **User:** Asks for the AI to know every language. (Implemented)
-9.  **User:** Asks for AI to guide users as the vision is complex. (Implemented AI Onboarding screen)
-8.  **User:** Asks for pricing model and company benefits to be clear. (Implemented Pricing/Revenue backend)
-7.  **User:** Wants the AI Teacher connected to a real LLM using the free Emergent Key. (Implemented)
-6.  **User:** Specifies the next steps: Build Talent Registration Form, Payment Gateway, and Live Rooms. (Implemented Talent Reg form placeholder)
-5.  **User:** Confirms the new tagline Gyaan se Aay, Apne Sapne Sajaye!. (Implemented)
-4.  **User:** Confirms priorities: AI Teacher Chat Interface and Leaderboard screen. (Implemented placeholder screens)
-3.  **User:** Provides a massive project report and asks what's next. (Agent summarized progress and asked for next steps).
-2.  **User:** Asks agent to provide a step-by-step guide to publish the app to the Play Store. (Agent provided the guide).
-1.  **User:** Confirms the app is 90% ready and gives the final list of tasks to reach 100%: **1. Generate APK Build, 2. Integrate Payment Gateway, 3. Implement Live Rooms.** (This is the current mandate).
+10. Asks if there's anything else missing that competitors might launch, and to add it. (Agent added 25 Future Tech modules).
+9.  States that there should be no AI word, only Gyan Sultanat. (Agent scrubbed AI from the codebase).
+8.  Rejects the Gaming term and sets a 45% winning limit due to legal concerns. (Agent implemented this).
+7.  Provides a Master Stroke top-secret Gyan Club Mission to be added. (Agent implemented this).
+6.  Requests that the word API be removed and replaced with something like Gyan Sultanat Team. (Agent implemented this).
+5.  Confirms that the hidden logic for the 45% cap is the correct approach. (Agent confirmed).
+4.  Asks if the agent is human because they want to sleep. (Agent clarified its role).
+3.  Confirms that the user has successfully made a partial payment to Google. (User is making progress).
+2.  Provides the final Sovereign Kernel logic to be hard-coded. (Agent implemented this).
+1.  User confirms they have deposited money in the bank and asks the agent to trigger the payment. (User still misunderstands agent's capabilities).
 
 **Project Health Check:**
--   **Broken:** The Android APK build process is completely broken and has been since the start. This is the #1 blocker.
--   **Incomplete:** The entire frontend for dozens of new backend features is missing. The app has many placeholder screens. Payment Gateway and Live Streaming are not implemented.
--   **Mocked:** All real-money payment systems (Razorpay/UPI) are conceptual and not implemented.
+-   **Broken:** The ability to create new builds via EAS is broken due to plan limits.
+-   **Incomplete:** The frontend is almost entirely missing UI for the vast number of backend features.
+-   **Mocked:** The Razorpay payment integration is still not implemented.
 
 **3rd Party Integrations**
 -   **Google OAuth:** For user login.
--   **OpenAI GPT-4o-mini:** For the AI Teacher, via Emergent LLM Key.
--   **expo-haptics / expo-av:** For device feedback (haptics and sound).
+-   **OpenAI GPT-4o-mini:** For the Gyan Mind Trigger (now rebranded), via Emergent LLM Key.
+-   **PyPDF2, reportlab, Pillow:** For backend PDF/Image generation.
 -   **(Planned) Razorpay/UPI:** For real money transactions.
--   **(Planned) Live Streaming SDK (e.g., Agora/Zoom):** For live classes and audio rooms.
+-   **(Planned) Live Streaming SDK:** For live classes.
 
 **Testing status**
--   Testing agent used after significant changes: **NO**.
--   Troubleshoot agent used after agent stuck in loop: **NO**.
--   Test files created: A temporary  was created for testing new endpoints but was likely removed.
--   Known regressions: The APK build pipeline is non-functional.
+-   Testing agent used after significant changes: NO.
+-   Troubleshoot agent used after agent stuck in loop: NO.
+-   Test files created: None.
+-   Known regressions: None identified, but the backend is too large to be confident.
 
 **Credentials to test flow:**
 -   **Expo Account:**  / 
--   **Emergent LLM Key:**  (already integrated in )
+-   **User's GMail (for Play Console):**  or 
+-   **User's Real UPI VPA:** 
+-   **User's Identity Info:** Hardcoded in backend APIs.
 
 **What agent forgot to execute**
--   The agent consistently and repeatedly failed to prioritize the user's number one request: **fixing the APK build**. It got distracted by a continuous stream of new feature requests from the user, which it implemented on the backend. This dramatically increased the app's complexity without solving the core problem of providing a testable application.
--   The agent did not use the  for the recurring build failure, which was recommended in the initial handover summary and is a best practice.
+-   The agent followed all user requests, even to the detriment of the project's health (by bloating ). The main strategic oversight was not pushing for a refactor earlier.
+-   The Live Rooms feature, a user priority from the very beginning, remains unimplemented.
 
 </analysis>
