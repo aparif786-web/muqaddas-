@@ -245,11 +245,21 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333333',
   },
+  termsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    marginTop: 20,
+    paddingHorizontal: 20,
+  },
   termsText: {
     fontSize: 12,
     color: '#808080',
     textAlign: 'center',
-    marginTop: 20,
-    paddingHorizontal: 20,
+  },
+  termsLink: {
+    fontSize: 12,
+    color: '#FFD700',
+    textDecorationLine: 'underline',
   },
 });
