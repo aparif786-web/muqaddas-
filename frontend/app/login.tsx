@@ -94,9 +94,16 @@ export default function LoginScreen() {
                 <Text style={styles.googleButtonText}>Continue with Google</Text>
               </TouchableOpacity>
 
-              <Text style={styles.termsText}>
-                By continuing, you agree to our Terms of Service & Privacy Policy
-              </Text>
+              <View style={styles.termsContainer}>
+                <Text style={styles.termsText}>By continuing, you agree to our </Text>
+                <TouchableOpacity onPress={() => handleOpenLink('/api/legal/terms')}>
+                  <Text style={styles.termsLink}>Terms of Service</Text>
+                </TouchableOpacity>
+                <Text style={styles.termsText}> & </Text>
+                <TouchableOpacity onPress={() => handleOpenLink('/api/legal/privacy-policy')}>
+                  <Text style={styles.termsLink}>Privacy Policy</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </SafeAreaView>
