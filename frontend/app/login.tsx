@@ -15,6 +15,8 @@ import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
 import { useAuth } from '../src/contexts/AuthContext';
 
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL || '';
+
 const { width } = Dimensions.get('window');
 
 export default function LoginScreen() {
