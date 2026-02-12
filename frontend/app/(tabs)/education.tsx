@@ -37,7 +37,7 @@ interface Course {
   };
 }
 
-interface CharityChallenge {
+interface MindChallenge {
   challenge_id: string;
   name: string;
   description: string;
@@ -66,14 +66,14 @@ interface LearningLevel {
 export default function EducationScreen() {
   const { user } = useAuth();
   const [courses, setCourses] = useState<Course[]>([]);
-  const [charityChallenges, setMindGames] = useState<CharityChallenge[]>([]);
+  const [mindChallenges, setMindGames] = useState<MindChallenge[]>([]);
   const [profile, setProfile] = useState<EducationProfile | null>(null);
   const [learningLevels, setLearningLevels] = useState<Record<string, LearningLevel>>({});
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedTab, setSelectedTab] = useState<'courses' | 'challenges'>('courses');
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
-  const [selectedChallenge, setSelectedGame] = useState<CharityChallenge | null>(null);
+  const [selectedChallenge, setSelectedGame] = useState<MindChallenge | null>(null);
   const [enrolling, setEnrolling] = useState(false);
   const [playing, setPlaying] = useState(false);
   const [challengeResult, setGameResult] = useState<{ won: boolean; coins: number } | null>(null);
@@ -83,7 +83,7 @@ export default function EducationScreen() {
       const [configRes, coursesRes, gamesRes, profileRes] = await Promise.all([
         api.get('/education/config'),
         api.get('/education/courses'),
-        api.get('/education/charity-challenges'),
+        api.get('/education/mind-challenges'),
         api.get('/education/profile').catch(() => ({ data: null })),
       ]);
 
@@ -132,7 +132,7 @@ export default function EducationScreen() {
     try {
       // Simulate game play with random score
       const score = Math.floor(Math.random() * 100);
-      const response = await api.post('/education/start-charity-challenge', {
+      const response = await api.post('/education/start-mind-challenge', {
         challenge_id: game.challenge_id,
         score: score,
         time_taken: Math.floor(Math.random() * game.time_limit_seconds),
@@ -397,7 +397,7 @@ export default function EducationScreen() {
                 <Text style={styles.sectionSubtitle}>Knowledge Battle - Train your brain and earn rewards!</Text>
                 
                 <View style={styles.gamesGrid}>
-                  {charityChallenges.map((game) => (
+                  {mindChallenges.map((game) => (
                     <TouchableOpacity
                       key={game.challenge_id}
                       style={styles.gameCard}
