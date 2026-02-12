@@ -48,13 +48,30 @@ export default function LoginScreen() {
 
   const handleGoogleLogin = async () => {
     try {
-      const redirectUrl = Platform.OS === 'web'
-        ? `${process.env.EXPO_PUBLIC_BACKEND_URL}/`
-        : Linking.createURL('/');
+      // Get proper redirect URL based on platform
+      let redirectUrl: string;
+      
+      if (Platform.OS === 'web') {
+        // For web, use current origin or backend URL
+        const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
+        redirectUrl = currentOrigin || process.env.EXPO_PUBLIC_BACKEND_URL || 'https://sultan-pulse-demo.preview.emergentagent.com';
+      } else {
+        // For mobile app, use deep link
+        redirectUrl = Linking.createURL('auth-callback');
+      }
+      
+      // Ensure redirect URL is valid
+      if (!redirectUrl || redirectUrl === 'undefined' || redirectUrl === '') {
+        redirectUrl = 'https://sultan-pulse-demo.preview.emergentagent.com';
+      }
       
       const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
       
+      console.log('Auth URL:', authUrl);
+      console.log('Redirect URL:', redirectUrl);
+      
       if (Platform.OS === 'web') {
+        // @ts-ignore
         window.location.href = authUrl;
       } else {
         const result = await WebBrowser.openAuthSessionAsync(authUrl, redirectUrl);
