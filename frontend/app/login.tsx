@@ -88,7 +88,7 @@ export default function LoginScreen() {
             <View style={styles.features}>
               <FeatureItem icon="school" text="Education Platform" />
               <FeatureItem icon="bulb" text="Gyan Yuddh" />
-              <FeatureItem icon="heart" text="Charity System" />
+              <FeatureItem icon="people" text="Live Streaming" />
               <FeatureItem icon="trophy" text="Rewards & Leaderboard" />
             </View>
 
