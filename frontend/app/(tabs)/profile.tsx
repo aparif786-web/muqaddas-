@@ -205,12 +205,12 @@ export default function ProfileScreen() {
                     colors={['#E91E63', '#C2185B']}
                     style={styles.walletCardGradient}
                   >
-                    <Ionicons name="heart" size={24} color="#FFFFFF" />
-                    <Text style={styles.walletCardLabel}>Charity Wallet</Text>
+                    <Ionicons name="gift" size={24} color="#FFFFFF" />
+                    <Text style={styles.walletCardLabel}>Bonus Wallet</Text>
                     <Text style={styles.walletCardAmount}>
                       {wallet?.bonus_balance?.toLocaleString() || '0'}
                     </Text>
-                    <Text style={styles.walletCardCurrency}>For Good</Text>
+                    <Text style={styles.walletCardCurrency}>Rewards</Text>
                   </LinearGradient>
                 </View>
               </View>
