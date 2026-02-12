@@ -20,7 +20,7 @@ interface VIPLevel {
   name: string;
   recharge_requirement: number;
   monthly_fee: number;
-  charity_bonus: number;
+  gift_bonus: number;
   free_spins_daily: number;
   education_discount: number;
   priority_support: boolean;
