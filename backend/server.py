@@ -13336,19 +13336,6 @@ async def get_complete_smart_dashboard():
 
 # Include the router in the main app
 app.include_router(api_router)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_credentials=True,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-@app.on_event("shutdown")
-async def shutdown_db_client():
-    client.close()
-
 # ========================================
 # 🌍 COUNTRY-WISE OFFICIAL GROUP SYSTEM
 # ========================================
@@ -13770,3 +13757,18 @@ async def get_country_compliance(country_code: str):
         },
         "guarantee": f"All data of {country['country_name']} users is stored in {country['server_location']} and follows local laws."
     }
+
+# Include the router in the main app
+app.include_router(api_router)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_credentials=True,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+@app.on_event("shutdown")
+async def shutdown_db_client():
+    client.close()
