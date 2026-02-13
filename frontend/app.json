@@ -70,9 +70,7 @@
       }
     },
     "owner": "muqaddasnetworks-organization",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.1",
     "updates": {
       "url": "https://u.expo.dev/59db773b-0bd4-4c7c-bc04-e2a361f880ad"
     }
