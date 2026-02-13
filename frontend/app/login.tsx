@@ -54,7 +54,7 @@ export default function LoginScreen() {
       if (Platform.OS === 'web') {
         // For web, use current origin or backend URL
         const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-        redirectUrl = currentOrigin || process.env.EXPO_PUBLIC_BACKEND_URL || 'https://sultan-pulse-demo.preview.emergentagent.com';
+        redirectUrl = currentOrigin || process.env.EXPO_PUBLIC_BACKEND_URL || 'https://sultanat-auth-fix.preview.emergentagent.com';
       } else {
         // For mobile app, use deep link
         redirectUrl = Linking.createURL('auth-callback');
@@ -62,7 +62,7 @@ export default function LoginScreen() {
       
       // Ensure redirect URL is valid
       if (!redirectUrl || redirectUrl === 'undefined' || redirectUrl === '') {
-        redirectUrl = 'https://sultan-pulse-demo.preview.emergentagent.com';
+        redirectUrl = 'https://sultanat-auth-fix.preview.emergentagent.com';
       }
       
       const authUrl = `https://auth.emergentagent.com/?redirect=${encodeURIComponent(redirectUrl)}`;
